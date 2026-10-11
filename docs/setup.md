@@ -26,9 +26,13 @@ In Supabase: **SQL Editor → New query**. Paste and run each file, in this orde
 
 1. `supabase/migrations/0001_schema.sql`
 2. `supabase/migrations/0002_storage.sql`
-3. `supabase/seed.sql`
+3. `supabase/migrations/0003_harden_grants.sql`
+4. `supabase/seed.sql`
 
 Each should end with "Success. No rows returned".
+
+Then run `supabase/checks/security.sql` (read-only). Every table must show `anon_can_select = false`
+and every `_public` view `true`.
 
 ## 3. Lock down sign-up
 
