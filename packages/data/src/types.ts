@@ -1,4 +1,4 @@
-/** Row shapes. They mirror supabase/migrations/0001_schema.sql; change both together. */
+/** Row shapes. They mirror supabase/migrations/*.sql; change both together. */
 
 export type PostStatus = "draft" | "published";
 export interface Post {
@@ -72,4 +72,17 @@ export interface VaultFile {
   size_bytes: number;
   mime_type: string | null;
   created_at: string;
+}
+
+export type LearningStage = "started" | "practising" | "applying";
+export interface Learning {
+  id: string;
+  topic: string;
+  focus: string | null;
+  stage: LearningStage;
+  started_on: string | null;
+  link: string | null;
+  /** Admin only: hidden rows never reach the public view. */
+  visible?: boolean;
+  sort_order: number;
 }

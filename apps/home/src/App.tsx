@@ -1,6 +1,6 @@
 import { SiteHeader, contact, siteUrl } from "@site/ui";
-import { listBooks, listPeople, listPosts, formatDate, useAsync } from "@site/data";
-import { about, hero, hobbies, projects, whatIDo } from "./content";
+import { listBooks, listLearning, listPeople, listPosts, formatDate, formatMonth, learningStageLabel, useAsync } from "@site/data";
+import { about, hero, hobbies, learning, projects, whatIDo } from "./content";
 import "./home.css";
 
 export function App() {
@@ -13,6 +13,7 @@ export function App() {
         <Hobbies />
         <WhatIDo />
         <Projects />
+        <Learning />
         <Lately />
       </main>
       <Contact />
@@ -209,6 +210,42 @@ function Projects() {
           </li>
         ))}
       </ol>
+    </section>
+  );
+}
+
+/**
+ * Live from the vault's Homepage tab. If the list is empty or the database is unreachable,
+ * the section steps aside instead of showing an error on the front page.
+ */
+function Learning() {
+  const { state } = useAsync(listLearning);
+  if (state.status === "error" || (state.status === "ready" && state.data.length === 0)) return null;
+  const items = state.status === "ready" ? state.data : [];
+
+  return (
+    <section className="wrap split section" aria-labelledby="learn-h" aria-busy={state.status === "loading"}>
+      <span className="tag">Currently learning</span>
+      <div className="stack-32">
+        <h2 id="learn-h" className="grot h-section">
+          <TwoTone parts={learning.heading} />
+        </h2>
+        <ul className="learning">
+          {items.map((l) => (
+            <li key={l.id} className="learn">
+              <div className="learn-head">
+                <h3 className="grot learn-topic">{l.topic}</h3>
+                <span className={`learn-stage stage-${l.stage}`}>{learningStageLabel[l.stage]}</span>
+              </div>
+              {l.focus && <p className="body-2 learn-focus">{l.focus}</p>}
+              <div className="learn-meta mono muted">
+                {l.started_on && <span>Since {formatMonth(l.started_on)}</span>}
+                {l.link && <a href={l.link} className="learn-link">Notes ↗</a>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

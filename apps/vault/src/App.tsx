@@ -7,6 +7,7 @@ import { FilesPage } from "./files";
 import { PostsPage } from "./posts";
 import { BooksPage } from "./books";
 import { PeoplePage } from "./people";
+import { HomepagePage } from "./homepage";
 import "./vault.css";
 
 export function App() {
@@ -19,6 +20,7 @@ export function App() {
 
 const sections = [
   { to: "/files", label: "Files" },
+  { to: "/homepage", label: "Homepage" },
   { to: "/thoughts", label: "Thoughts" },
   { to: "/library", label: "Library" },
   { to: "/people", label: "People" },
@@ -61,6 +63,7 @@ function Console({ session, signOut }: { session: Session; signOut: () => void }
           <Routes>
             <Route path="/" element={<Navigate to="/files" replace />} />
             <Route path="/files" element={<FilesPage />} />
+            <Route path="/homepage/*" element={<HomepagePage />} />
             <Route path="/thoughts/*" element={<PostsPage />} />
             <Route path="/library/*" element={<BooksPage />} />
             <Route path="/people/*" element={<PeoplePage />} />

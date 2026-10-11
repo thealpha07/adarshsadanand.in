@@ -75,3 +75,9 @@ td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: m
 .fieldset { border: 1px solid var(--line); padding: 20px; display: flex; flex-direction: column; gap: 16px; margin: 0; }
 .fieldset legend { font: 700 14px/20px var(--font-display); text-transform: uppercase; padding: 0 6px; }
 .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 8px; }
+
+/* Reorderable rows (Homepage → What I'm learning): the row link plus up/down buttons. */
+.stack-8 { display: flex; flex-direction: column; gap: 8px; }
+.order-row { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
+.order-row .edit-row { flex: 1; min-width: 0; border-bottom: 0; }
+.order-buttons { display: flex; gap: 6px; flex: none; }

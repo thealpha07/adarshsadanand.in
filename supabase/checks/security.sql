@@ -2,7 +2,7 @@
 -- Answers one question per object: can a visitor (role "anon") read it?
 --
 -- Expected:
---   tables (posts, books, people, anecdotes, vault_files, admins): rls_on = true,  anon_can_select = false
+--   tables (posts, books, people, anecdotes, vault_files, admins, learning): rls_on = true,  anon_can_select = false
 --   views  (*_public):                                             rls_on = false, anon_can_select = true
 
 select
@@ -14,6 +14,6 @@ select
 from pg_class c
 join pg_namespace n on n.oid = c.relnamespace
 where n.nspname = 'public'
-  and c.relname in ('posts', 'books', 'people', 'anecdotes', 'vault_files', 'admins',
-                    'posts_public', 'books_public', 'people_public', 'anecdotes_public')
+  and c.relname in ('posts', 'books', 'people', 'anecdotes', 'vault_files', 'admins', 'learning',
+                    'posts_public', 'books_public', 'people_public', 'anecdotes_public', 'learning_public')
 order by kind, object;

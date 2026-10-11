@@ -1,5 +1,5 @@
 import { supabase } from "./client";
-import type { Anecdote, Book, Person, Post } from "./types";
+import type { Anecdote, Book, Learning, Person, Post } from "./types";
 
 /**
  * Read queries for the public sites. They read from *_public views, which
@@ -37,6 +37,10 @@ export async function getPerson(slug: string): Promise<{ person: Person | null; 
     await supabase.from("anecdotes_public").select("*").eq("person_id", person.id).order("created_at", { ascending: false }),
   );
   return { person, anecdotes };
+}
+
+export async function listLearning(): Promise<Learning[]> {
+  return unwrap(await supabase.from("learning_public").select("*").order("sort_order").order("topic"));
 }
 
 /** Public URL of an image in the blog-images bucket. */

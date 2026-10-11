@@ -40,6 +40,11 @@ export const hobbies: { heading: readonly [string, string, string]; items: Hobby
   ],
 };
 
+/** Heading for the live "What I'm learning" section; the topics come from the vault. */
+export const learning = {
+  heading: ["What I'm", "learning", ""] as const,
+};
+
 export const whatIDo = {
   heading: ["Engineering", "systems, workflows", "& solutions"] as const,
   areas: [
@@ -92,24 +97,6 @@ export const projects: Project[] = [
     desc: "A Python web app that classifies EEG recordings with machine learning models to flag seizure activity, deployed on Heroku.",
     stack: "Python · ML · Heroku",
     href: "https://github.com/thealpha07/Heroku-Noe-Waves",
-    image: null,
-  },
-  {
-    name: "Parking Management",
-    kind: "/Desktop app",
-    line: "Slots, bookings and receipts",
-    desc: "A NetBeans GUI application that manages parking slots using file-structure techniques, with calendar booking and PDF receipts.",
-    stack: "Java · NetBeans · iText · jCalendar",
-    href: "https://github.com/thealpha07/ParkingManagement",
-    image: null,
-  },
-  {
-    name: "Azathoth",
-    kind: "/Web platform",
-    line: "This site and its subdomains",
-    desc: "My personal platform: a portfolio with Thoughts, a library, a people journal and a private file vault, built as one system.",
-    stack: "TypeScript · React · Supabase · Cloudflare",
-    href: "https://github.com/thealpha07/adarshsadanand.in",
     image: null,
   },
 ];

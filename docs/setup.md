@@ -28,6 +28,7 @@ In Supabase: **SQL Editor → New query**. Paste and run each file, in this orde
 2. `supabase/migrations/0002_storage.sql`
 3. `supabase/migrations/0003_harden_grants.sql`
 4. `supabase/seed.sql`
+5. `supabase/migrations/0004_learning.sql` (the homepage's "What I'm learning"; it adds Node.js and Risk management as starting topics)
 
 Each should end with "Success. No rows returned".
 
