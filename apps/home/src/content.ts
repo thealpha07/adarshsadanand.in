@@ -4,6 +4,8 @@
  * Two-tone headings are [ink, soft, ink] triples.
  */
 
+import type { SiteKey } from "@site/ui";
+
 export const hero = {
   firstName: "Adarsh",
   ghostWord: "Engineer",
@@ -16,16 +18,27 @@ export const hero = {
 export const about = {
   heading: ["Meaningful", "work, growth, and recognition", "— beyond just a paycheck"] as const,
   bio:
-    "I'm a postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but what I enjoy is programming whole systems. Away from the screen I collect things and read everything: literature, manga, light novels and mythology.",
+    "I'm a postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but what I enjoy is programming whole systems.",
   resumeHref: "/Adarsh_Sadanand_Resume.pdf",
 };
 
-export const facts = [
-  { label: "Product engineering", value: "3+ yrs", note: "At Multifonds, Jul 2022 – Nov 2025" },
-  { label: "Issues resolved", value: "90+/yr", note: "Two years running" },
-  { label: "Team led", value: "6", note: "Product-wide decimal precision upgrade" },
-  { label: "Recognition", value: "Emerging Star", note: "Award from the Product Support Head, 2025" },
-];
+/** "Off the clock": hobbies. Keep notes short; the title carries the card. */
+export interface Hobby {
+  title: string;
+  note: string;
+  /** Optional link to one of the sites. */
+  link?: SiteKey;
+}
+
+export const hobbies: { heading: readonly [string, string, string]; items: Hobby[] } = {
+  heading: ["When I'm", "not", "building"],
+  items: [
+    { title: "Cycling", note: "Getting out on two wheels, away from every screen." },
+    { title: "Dungeons & Dragons", note: "Tabletop campaigns and the stories a table of friends makes up together." },
+    { title: "Anime & manga", note: "Plus manhua and light novels. The queue never gets shorter." },
+    { title: "Reading & collecting", note: "Literature and mythology, and a shelf of things I collect.", link: "library" },
+  ],
+};
 
 export const whatIDo = {
   heading: ["Engineering", "systems, workflows", "& solutions"] as const,

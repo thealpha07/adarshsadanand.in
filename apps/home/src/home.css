@@ -10,11 +10,13 @@
 .cross { position: absolute; width: 13px; height: 13px; color: var(--on-hero-soft); }
 .hero-ghost {
   position: absolute; left: var(--edge); right: var(--edge); top: 96px;
-  font-size: clamp(96px, 17vw, 260px); line-height: 0.85; color: rgba(255, 255, 255, 0.08); white-space: nowrap; pointer-events: none;
+  /* "ENGINEER" in Archivo 800 @118% is 6.27em wide. Size it from the content width (divided by a little more,
+     to absorb a desktop scrollbar inside 100vw) so the whole word always fits between the edges. */
+  font-size: calc((min(100vw, var(--content-max)) - 2 * var(--gutter)) / 6.5); line-height: 0.85; color: rgba(255, 255, 255, 0.08); white-space: nowrap; pointer-events: none;
 }
 .hero-portrait {
-  position: absolute; left: 50%; bottom: -120px; transform: translateX(-50%);
-  height: 900px; width: auto; max-width: none; pointer-events: none;
+  position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+  height: 780px; width: auto; max-width: none; pointer-events: none;
 }
 .hero-line { position: absolute; left: var(--edge); top: 300px; max-width: 28ch; font-size: 13px; line-height: 20px; color: #fff; }
 .hero-book {
@@ -64,9 +66,13 @@
 .elsewhere-link { font: 700 22px/28px var(--font-display); text-decoration: none; }
 .elsewhere-link:hover { color: var(--cobalt); }
 
-.facts { padding-top: 80px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.fact { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 10px; }
-.fact-value { font-size: clamp(36px, 4vw, 56px); line-height: 1; }
+.hobbies { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 560px) { .hobbies { grid-template-columns: 1fr; } }
+.hobby { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.hobby p { margin: 0; }
+/* Sized so the longest title ("Dungeons & Dragons") wraps between words and stays inside the card. */
+.hobby-title { font-size: clamp(22px, 2vw, 28px); line-height: 1.05; overflow-wrap: break-word; }
+.hobby-link { margin-top: auto; padding-top: 6px; font-size: 13px; color: var(--cobalt); }
 
 .area { display: grid; grid-template-columns: 80px minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; padding: 36px 0; border-top: 1px solid var(--line); align-items: start; }
 @media (max-width: 860px) { .area { grid-template-columns: 1fr; gap: 16px; } }

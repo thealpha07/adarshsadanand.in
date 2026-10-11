@@ -1,6 +1,6 @@
 import { SiteHeader, contact, siteUrl } from "@site/ui";
 import { listBooks, listPeople, listPosts, formatDate, useAsync } from "@site/data";
-import { about, facts, hero, projects, whatIDo } from "./content";
+import { about, hero, hobbies, projects, whatIDo } from "./content";
 import "./home.css";
 
 export function App() {
@@ -10,7 +10,7 @@ export function App() {
       <main id="main">
         <Elsewhere />
         <About />
-        <Facts />
+        <Hobbies />
         <WhatIDo />
         <Projects />
         <Lately />
@@ -52,8 +52,8 @@ function Hero() {
         className="hero-portrait"
         src="/images/portrait.webp"
         alt={hero.portraitAlt}
-        width={728}
-        height={1700}
+        width={475}
+        height={1144}
         fetchPriority="high"
       />
       <p className="mono hero-line">{hero.line}</p>
@@ -121,16 +121,27 @@ function About() {
   );
 }
 
-function Facts() {
+function Hobbies() {
   return (
-    <section className="wrap facts" aria-label="At a glance">
-      {facts.map((f) => (
-        <div key={f.label} className="fact">
-          <span className="tag">{f.label}</span>
-          <span className="grot fact-value">{f.value}</span>
-          <span className="small body-2">{f.note}</span>
-        </div>
-      ))}
+    <section className="wrap split section" aria-labelledby="off-h">
+      <span className="tag">Off the clock</span>
+      <div className="stack-32">
+        <h2 id="off-h" className="grot h-section">
+          <TwoTone parts={hobbies.heading} />
+        </h2>
+        <ul className="hobbies">
+          {hobbies.items.map((h, i) => (
+            <li key={h.title} className="hobby">
+              <span className="mono muted">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="grot hobby-title">{h.title}</h3>
+              <p className="small body-2">{h.note}</p>
+              {h.link && (
+                <a className="hobby-link mono" href={siteUrl(h.link)}>See the Library ↗</a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
