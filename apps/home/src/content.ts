@@ -69,7 +69,7 @@ export const projects: Project[] = [
     line: "RIT User Systems",
     desc: "A customised Ubuntu-based Linux distribution with process visualisation, system memory monitoring and baseline security tools.",
     stack: "Python · Linux · OS internals",
-    href: "https://github.com/thealpha07",
+    href: "https://github.com/thealpha07/RITUS_OS",
     image: null,
   },
   {
