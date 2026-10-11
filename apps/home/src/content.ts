@@ -9,8 +9,8 @@ import type { SiteKey } from "@site/ui";
 export const hero = {
   firstName: "Adarsh",
   ghostWord: "Engineer",
-  line: "I absorb, comprehend and build stuff. Neurodivergent, and I get things done.",
-  role: "Technology Enthusiast",
+  line: "I absorb, comprehend and build stuff. Neurodivergent, but I get things done.",
+  role: "Tech Enthusiast",
   fullName: "Adarsh Sadanand",
   portraitAlt: "Adarsh laughing, arms crossed, in a navy kurta",
 };
@@ -18,7 +18,7 @@ export const hero = {
 export const about = {
   heading: ["Meaningful", "work, growth, and recognition", "— beyond just a paycheck"] as const,
   bio:
-    "I'm a postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but what I enjoy is programming whole systems.",
+    "A postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three and a half years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but I truly enjoy programming complete systems.",
   resumeHref: "/Adarsh_Sadanand_Resume.pdf",
 };
 
