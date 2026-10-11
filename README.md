@@ -65,3 +65,7 @@ First-time setup of DNS, the database and hosting: [docs/setup.md](docs/setup.md
 - WCAG 2.2 AA: keyboard reachable, visible focus, 4.5:1 text contrast, works at 360 px.
 - The database enforces privacy. The UI never has to remember to hide something.
 - Every decision that has an alternative gets an ADR.
+
+## Icons
+
+Every site icon is generated from one drawing ("Buta A": an A whose crossbar is the gold buta from the hero kurta), on that site's colour. Edit `scripts/make-icons.mjs` and run `node scripts/make-icons.mjs`; never hand-edit the generated `favicon.svg` or `apple-touch-icon.png` files.
