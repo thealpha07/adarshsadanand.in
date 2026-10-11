@@ -1,0 +1,44 @@
+/* Azathoth design tokens, version 2.
+   Source of truth: the Azathoth design system. Change values there first,
+   then mirror them here. Every text colour notes the grounds it passes on. */
+:root {
+  /* Grounds */
+  --midnight: #1e2a44;      /* hero and page-top bands */
+  --night: #0b0f14;         /* contact, footer, menu */
+  --ground: #f3f5f7;        /* page background */
+  --surface: #ffffff;       /* cards, tables */
+  --sunken: #e8ecf0;        /* inputs, progress tracks */
+
+  /* Text */
+  --ink: #0b0f14;           /* 17:1 on ground */
+  --body-2: #3f4a55;        /* 8.5:1 on ground and surface */
+  --muted: #56616d;         /* 5.8:1 on ground: small metadata */
+  --grey: #6b7682;          /* 4.2:1: two-tone headings 24px+ only */
+  --on-hero: #ffffff;       /* 14:1 on midnight */
+  --on-hero-soft: #c3cad8;  /* 8.7:1 on midnight */
+
+  /* Lines */
+  --line: #dde2e7;          /* decorative */
+  --line-strong: #7a8894;   /* control borders, 3.3:1 */
+
+  /* Accents: one per site, small marks only */
+  --cobalt: #2343d1;        /* links, focus, Thoughts */
+  --teal: #0c5e66;          /* Library */
+  --plum: #7b3f8c;          /* People */
+  --slate: #3f5a6b;         /* Vault */
+  --danger: #a3271f;
+
+  /* Type */
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Shape and layout */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --content-max: 1280px;
+  --measure: 68ch;
+  --tap-min: 44px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.3);
+}

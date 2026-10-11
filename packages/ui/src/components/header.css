@@ -1,0 +1,42 @@
+.site-header {
+  position: relative; z-index: 2; width: 100%;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+  padding-top: 24px; padding-bottom: 24px; color: var(--on-hero);
+}
+.site-mark { font: 700 19px/24px var(--font-display); color: #fff; text-decoration: none; }
+.site-mark sup { font-size: 11px; }
+.site-nav { display: flex; flex-wrap: wrap; gap: clamp(16px, 3vw, 36px); }
+.nav-link {
+  display: inline-flex; align-items: center; min-height: var(--tap-min);
+  color: var(--on-hero); font-size: 15px; text-decoration: none;
+}
+.nav-link:hover, .nav-link[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; }
+.menu-button {
+  width: var(--tap-min); height: var(--tap-min); display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 0; color: #fff; cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .site-nav { display: none; } /* The menu button covers navigation on phones. */
+}
+
+.menu-overlay { position: fixed; inset: 0; z-index: 50; background: var(--night); color: #fff; overflow-y: auto; }
+.menu-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 25% 100%;
+}
+.menu-inner { position: relative; min-height: 100%; display: flex; flex-direction: column; gap: 48px; padding-top: 24px; padding-bottom: 48px; }
+.menu-top { display: flex; align-items: center; justify-content: space-between; }
+.menu-body { flex: 1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 64px; }
+.menu-links { flex: 999 1 420px; display: flex; flex-direction: column; }
+.menu-item { display: grid; grid-template-columns: 56px 1fr; align-items: baseline; gap: 16px; padding: 6px 0; color: #fff; text-decoration: none; }
+.menu-item .mono { color: #a9b3bf; }
+.menu-item .grot { font-size: clamp(44px, 7vw, 96px); line-height: 0.95; }
+.menu-item:hover .grot { color: #8fa3ff; }
+.menu-item[aria-current="page"] .grot { color: #8a96a3; }
+.menu-info { flex: 1 1 260px; margin: 0; display: flex; flex-direction: column; gap: 24px; }
+.menu-info dt { color: #a9b3bf; }
+.menu-info dd { margin: 4px 0 0; font-size: 19px; line-height: 28px; }
+.menu-info a { color: #fff; }
+.menu-social { display: flex; gap: 20px; }

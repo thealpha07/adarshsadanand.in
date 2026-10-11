@@ -1,0 +1,21 @@
+{
+  "name": "adarshsadanand.in",
+  "private": true,
+  "description": "Personal platform: portfolio, Thoughts, Library, People and a private Vault.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:home": "npm run dev -w @site/home",
+    "dev:blog": "npm run dev -w @site/blog",
+    "dev:books": "npm run dev -w @site/books",
+    "dev:people": "npm run dev -w @site/people",
+    "dev:vault": "npm run dev -w @site/vault",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

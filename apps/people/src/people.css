@@ -1,0 +1,29 @@
+.filters { display: flex; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+.filter {
+  display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 18px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); background: transparent; color: var(--ink);
+  font: 700 14px/20px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; cursor: pointer;
+}
+.filter[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.people-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.person {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 18px; min-height: 300px; height: 100%;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; color: var(--ink); text-decoration: none;
+}
+.person:hover { border-color: var(--ink); }
+.person-number { position: absolute; right: -8px; bottom: -18px; font-size: 120px; line-height: 1; color: rgba(11, 15, 20, 0.04); }
+.mark { width: 52px; height: 52px; border: 2px solid var(--plum); color: var(--plum); display: flex; align-items: center; justify-content: center; font: 800 22px/1 var(--font-display); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+
+.person-layout { padding-top: 64px; padding-bottom: 96px; display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start; }
+.person-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 56px; }
+.person-side { flex: 1 1 300px; display: flex; flex-direction: column; gap: 16px; }
+.stack-16 { display: flex; flex-direction: column; gap: 16px; }
+.anecdotes { list-style: none; margin: 0; padding: 0; }
+.anecdotes li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 24px; padding: 24px 0; border-top: 1px solid var(--line); }
+@media (max-width: 640px) { .anecdotes li { grid-template-columns: 1fr; gap: 8px; } }
+.symbol { background: var(--midnight); color: #fff; padding: 28px; display: flex; flex-direction: column; gap: 10px; }
+.details { margin: 0; background: var(--surface); border: 1px solid var(--line); padding: 24px; }
+.details dd { margin: 4px 0 18px; }
+.details dd:last-child { margin-bottom: 0; }

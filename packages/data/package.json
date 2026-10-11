@@ -1,0 +1,16 @@
+{
+  "name": "@site/data",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "marked": "^14.1.4",
+    "dompurify": "^3.2.4"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
+  }
+}

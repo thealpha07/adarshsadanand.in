@@ -1,0 +1,23 @@
+.shelf-bar { border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+.shelves { display: flex; flex-wrap: wrap; gap: 10px; }
+.shelf {
+  display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap-min); padding: 0 18px;
+  border-radius: var(--radius-sm); border: 1px solid var(--line-strong); background: transparent; color: var(--ink);
+  font: 700 14px/20px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; cursor: pointer;
+}
+.shelf[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.book-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 40px 28px; }
+.book { display: flex; flex-direction: column; gap: 10px; }
+.book-cover { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 2px; background: var(--sunken); }
+.cover-empty { display: flex; align-items: center; justify-content: center; padding: 16px; text-align: center; background: var(--midnight); color: #fff; }
+.cover-empty .grot { font-size: 16px; line-height: 18px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 26px; padding: 0 10px;
+  border-radius: var(--radius-sm); font: 700 12px/16px var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase;
+  background: var(--teal); color: #fff;
+}
+.note summary { cursor: pointer; font-size: 15px; color: var(--teal); font-weight: 700; min-height: var(--tap-min); display: flex; align-items: center; }
+
+.now-reading { width: 300px; max-width: 100%; background: #fff; color: var(--ink); padding: 10px; display: flex; gap: 14px; box-shadow: var(--shadow-float); }
+.now-cover { width: 96px; aspect-ratio: 2 / 3; object-fit: cover; flex: none; }

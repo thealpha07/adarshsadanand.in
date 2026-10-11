@@ -1,0 +1,38 @@
+.feature { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: center; color: var(--ink); text-decoration: none; }
+.feature:hover .feature-title { color: var(--cobalt); }
+@media (max-width: 860px) { .feature { grid-template-columns: 1fr; gap: 24px; } }
+.feature-cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius-sm); }
+.feature-cover-empty {
+  background: var(--midnight); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.5);
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px); background-size: 25% 100%;
+}
+.feature-cover-empty .grot { font-size: 96px; }
+.feature-title { font-size: clamp(32px, 4vw, 44px); line-height: 1.05; }
+
+.post-list { list-style: none; margin: 0; padding: 0; }
+.post-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 44px; gap: 32px; padding: 32px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.post-row:hover .grot { color: var(--cobalt); }
+.post-arrow { font-size: 24px; }
+@media (max-width: 640px) { .post-row { grid-template-columns: 1fr; gap: 8px; } .post-arrow { display: none; } }
+
+.tag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-dark { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.35); }
+
+.post-cover { width: min(1040px, calc(100% - 2 * var(--gutter))); margin: 0 auto 48px; aspect-ratio: 21 / 9; object-fit: cover; border-radius: var(--radius-sm); }
+
+.prose { font-size: 19px; line-height: 31px; color: #1f2731; display: flex; flex-direction: column; gap: 24px; }
+.prose > * { margin: 0; }
+.prose h2, .prose h3 {
+  font-family: var(--font-display); font-stretch: 118%; font-weight: 800; text-transform: uppercase;
+  letter-spacing: -0.02em; font-size: 30px; line-height: 34px; margin-top: 16px; color: var(--ink);
+}
+.prose h3 { font-size: 22px; line-height: 26px; }
+.prose a { color: var(--cobalt); }
+.prose img { border-radius: var(--radius-sm); }
+.prose pre { background: var(--night); color: #e6edf2; border-radius: var(--radius-sm); padding: 16px; overflow-x: auto; font: 15px/24px var(--font-mono); }
+.prose code { font-family: var(--font-mono); font-size: 0.88em; }
+.prose blockquote {
+  padding: 8px 0 8px 24px; border-left: 3px solid var(--ink);
+  font-family: var(--font-display); font-stretch: 110%; font-weight: 600; font-size: 26px; line-height: 34px; color: var(--ink);
+}
+.prose blockquote p { margin: 0; }
