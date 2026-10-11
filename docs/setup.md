@@ -29,6 +29,7 @@ In Supabase: **SQL Editor → New query**. Paste and run each file, in this orde
 3. `supabase/migrations/0003_harden_grants.sql`
 4. `supabase/seed.sql`
 5. `supabase/migrations/0004_learning.sql` (the homepage's "What I'm learning"; it adds Node.js and Risk management as starting topics)
+6. `supabase/migrations/0005_book_covers.sql` (a public bucket for book covers you upload in the vault)
 
 Each should end with "Success. No rows returned".
 

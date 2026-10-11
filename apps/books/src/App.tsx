@@ -63,9 +63,11 @@ export function App() {
   );
 }
 
+/** A missing or broken cover image falls back to a typeset cover, never a broken-image icon. */
 function Cover({ book, className }: { book: Book; className: string }) {
-  return book.cover_url ? (
-    <img src={book.cover_url} alt={`Cover of ${book.title}`} className={className} loading="lazy" />
+  const [failed, setFailed] = useState(false);
+  return book.cover_url && !failed ? (
+    <img src={book.cover_url} alt={`Cover of ${book.title}`} className={className} loading="lazy" onError={() => setFailed(true)} />
   ) : (
     <div className={`${className} cover-empty`} aria-hidden="true"><span className="grot">{book.title}</span></div>
   );

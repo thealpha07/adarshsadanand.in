@@ -3,6 +3,7 @@ import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { Empty, Failed, Loading } from "@site/ui";
 import { supabase, useAsync, type Book, type Shelf } from "@site/data";
 import { Area, Check, ConfirmButton, FormActions, Select, Text } from "./fields";
+import { toWebp } from "./images";
 
 export function BooksPage() {
   return (
@@ -54,8 +55,13 @@ const empty = {
   recommend_reason: "", note: "", note_public: false, started_on: "", finished_on: "",
 };
 
-/** Open Library serves covers by ISBN for free, so a cover is one field away. */
-const coverFromIsbn = (isbn: string) => (isbn ? `https://covers.openlibrary.org/b/isbn/${isbn.replace(/[^0-9X]/gi, "")}-L.jpg` : "");
+/**
+ * Cover sources, best first: an image you upload, a URL you paste, then Open Library by ISBN.
+ * Open Library covers are scans of real copies (worn edges, yellowed paper), so they're the fallback.
+ * `?default=false` makes Open Library answer "not found" instead of a blank 1-pixel image.
+ */
+const coverFromIsbn = (isbn: string) => (isbn ? `https://covers.openlibrary.org/b/isbn/${isbn.replace(/[^0-9X]/gi, "")}-L.jpg?default=false` : "");
+const COVERS = "book-covers";
 
 function BookEditor() {
   const { id = "new" } = useParams();
@@ -98,6 +104,23 @@ function BookEditor() {
     if (isNew) navigate(`../${res.data.id}`, { replace: true });
   }
 
+  const [uploading, setUploading] = useState(false);
+  async function uploadCover(file: File) {
+    setError(null);
+    setUploading(true);
+    try {
+      const blob = await toWebp(file);
+      const path = `${crypto.randomUUID()}.webp`;
+      const { error } = await supabase.storage.from(COVERS).upload(path, blob, { contentType: "image/webp" });
+      if (error) throw new Error(error.message);
+      set("cover_url", supabase.storage.from(COVERS).getPublicUrl(path).data.publicUrl);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function remove() {
     const { error } = await supabase.from("books").delete().eq("id", id);
     if (error) return setError(error.message);
@@ -116,7 +139,13 @@ function BookEditor() {
           <Text id="title" label="Title" required value={form.title} onChange={(v) => set("title", v)} />
           <Text id="author" label="Author" required value={form.author} onChange={(v) => set("author", v)} />
           <Text id="isbn" label="ISBN" value={form.isbn} onChange={(v) => set("isbn", v)} hint="Fills in the cover automatically from Open Library." />
-          <Text id="cover" label="Cover image URL" value={form.cover_url} onChange={(v) => set("cover_url", v)} hint="Leave empty to use the ISBN cover." />
+          <div className="field">
+            <label htmlFor="cover-file">Upload a cover</label>
+            <input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading}
+              onChange={(e) => e.target.files?.[0] && uploadCover(e.target.files[0])} aria-describedby="cover-file-hint" />
+            <span id="cover-file-hint" className="hint">{uploading ? "Uploading…" : "Best quality. Resized to 600 px wide WebP. Remember to Save."}</span>
+          </div>
+          <Text id="cover" label="…or cover image URL" value={form.cover_url} onChange={(v) => set("cover_url", v)} hint="Leave both empty to use the ISBN cover." />
         </div>
         {cover && <img src={cover} alt="Cover preview" className="cover-preview" />}
       </div>
