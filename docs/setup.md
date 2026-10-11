@@ -15,7 +15,7 @@ Do these once, in order. Each step says what it is for, so you know what breaks 
 
 4. In Cloudflare's DNS page, **delete** the old records that pointed at GitHub Pages:
    the four `A @ 185.199.10x.153` rows and `CNAME www → thealpha07.github.io`.
-   Pages will create the right records in step 5.
+   Adding custom domains in step 5 creates the right records.
 5. Wait for Cloudflare to email "adarshsadanand.in is now active" (minutes to 24 hours).
 
 ## 2. Create the database
@@ -55,28 +55,30 @@ and every `_public` view `true`.
 The first time you sign in to the vault it shows a QR code. Scan it with an authenticator app
 (Google Authenticator, Microsoft Authenticator, 1Password, Aegis). Every sign-in after that asks for its 6-digit code.
 
-## 5. Host the five sites on Cloudflare Pages
+## 5. Host the five sites on Cloudflare (Workers)
 
-**Why:** each push to `main` then rebuilds and publishes every site automatically.
+**Why:** after this, each push to `main` rebuilds and republishes every site automatically.
 
-Create **five** Pages projects, all from the same repo. For each:
-**Workers & Pages → Create → Pages → Connect to Git → thealpha07/adarshsadanand.in**
+Create **five** applications from the same repo. For each one, go to
+**Workers & Pages → Create application → Import a repository → thealpha07/adarshsadanand.in**.
 
-| Project name | Build command | Output directory | Custom domain |
+| Project name | Build command | Deploy command | Custom domain |
 | --- | --- | --- | --- |
-| `as-home` | `npm run build -w @site/home` | `apps/home/dist` | `adarshsadanand.in` and `www.adarshsadanand.in` |
-| `as-blog` | `npm run build -w @site/blog` | `apps/blog/dist` | `blog.adarshsadanand.in` |
-| `as-books` | `npm run build -w @site/books` | `apps/books/dist` | `books.adarshsadanand.in` |
-| `as-people` | `npm run build -w @site/people` | `apps/people/dist` | `characters.adarshsadanand.in` |
-| `as-vault` | `npm run build -w @site/vault` | `apps/vault/dist` | `files.adarshsadanand.in` |
+| `as-home` | `npm run build -w @site/home` | `npx wrangler deploy --config apps/home/wrangler.jsonc` | `adarshsadanand.in`, `www.adarshsadanand.in` |
+| `as-blog` | `npm run build -w @site/blog` | `npx wrangler deploy --config apps/blog/wrangler.jsonc` | `blog.adarshsadanand.in` |
+| `as-books` | `npm run build -w @site/books` | `npx wrangler deploy --config apps/books/wrangler.jsonc` | `books.adarshsadanand.in` |
+| `as-people` | `npm run build -w @site/people` | `npx wrangler deploy --config apps/people/wrangler.jsonc` | `characters.adarshsadanand.in` |
+| `as-vault` | `npm run build -w @site/vault` | `npx wrangler deploy --config apps/vault/wrangler.jsonc` | `files.adarshsadanand.in` |
 
-For every project:
-- Framework preset: **None**. Root directory: leave **empty** (the repo root).
-- Environment variable: `NODE_VERSION` = `22`.
-- After the first deploy: **Custom domains → Set up a domain** with the domain from the table.
+Do the following for every project:
+- **Project name** must match exactly, because it is the `name` in that app's `wrangler.jsonc`.
+- Open **Advanced settings**:
+  - Leave the root directory as `/`.
+  - Add the build variable `NODE_VERSION` = `22`.
+- Leave the non-production branch deploy command as `npx wrangler versions upload --config apps/<app>/wrangler.jsonc`, or turn it off.
+- After the first deploy, once the zone is Active, go to **Settings → Domains & Routes → Add → Custom domain** and add the domain from the table.
 
-The Supabase URL and publishable key have safe defaults in `packages/data/src/client.ts`;
-set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only if they ever change.
+The Supabase URL and publishable key have safe defaults in `packages/data/src/client.ts`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only if they ever change.
 
 ## 6. Let Supabase accept sign-ins from the vault
 

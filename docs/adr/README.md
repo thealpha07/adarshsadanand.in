@@ -8,3 +8,4 @@ Each file records one decision: the context, what was decided, the alternatives 
 - [All editing lives in the vault](0004-admin-console-in-vault.md)
 - [Privacy is enforced by the database](0005-privacy-in-the-database.md)
 - [Design direction B: midnight front door, calm rooms](0006-design-direction.md)
+- [Hosting: Workers static assets](0007-workers-static-assets.md)
