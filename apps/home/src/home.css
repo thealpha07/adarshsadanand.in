@@ -37,10 +37,13 @@
 .hero-talk-small { font-size: 12px; color: #c3cad1; }
 .hero-talk-arrow { width: 40px; height: 40px; background: #fff; color: var(--night); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
 
-/* Phones and small tablets: portrait first, then the words, nothing overlapping. */
+/* Phones and small tablets: portrait first, then the words, nothing overlapping
+   except the ghost word, which sits behind the portrait as on desktop. */
 @media (max-width: 900px) {
   .hero { min-height: 0; display: flex; flex-direction: column; padding-bottom: 32px; }
-  .cross, .hero-ghost { display: none; }
+  .cross { display: none; }
+  /* Same width-based size as desktop, so "ENGINEER" always fits between the gutters. */
+  .hero-ghost { top: 120px; }
   .hero-portrait { position: relative; left: auto; bottom: auto; transform: none; height: 420px; margin: 8px auto -40px; }
   .hero-line, .hero-name, .hero-book, .hero-talk { position: relative; left: auto; right: auto; top: auto; bottom: auto; margin: 0 var(--gutter); }
   .hero-name { order: 2; margin-top: 0; }
