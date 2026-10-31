@@ -9,3 +9,4 @@ Each file records one decision: the context, what was decided, the alternatives 
 - [Privacy is enforced by the database](0005-privacy-in-the-database.md)
 - [Design direction B: midnight front door, calm rooms](0006-design-direction.md)
 - [Hosting: Workers static assets](0007-workers-static-assets.md)
+- [Project subdomains live in the monorepo](0008-project-subdomains.md)

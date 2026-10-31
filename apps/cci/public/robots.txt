@@ -1,0 +1,4 @@
+# Not launched yet: keep out of search results.
+# When the tool goes public, change this to "Allow: /" and remove noindex in index.html.
+User-agent: *
+Disallow: /

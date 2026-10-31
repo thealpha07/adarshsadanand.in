@@ -16,6 +16,7 @@ const sites = {
   books: "#0c5e66",  // teal (Library)
   people: "#7b3f8c", // plum (People)
   vault: "#0b0f14",  // night (Vault: darkest, the private one)
+  cci: "#8a5300",    // amber (CCI project)
 };
 
 const BUTA = "M15.6 27.2c-5.6 0-8.7-4.3-8.1-9.1.6-4.5 4.6-6.6 8.1-8.3 2.7-1.3 4-2.9 3.6-5.8 3.9 1.6 6.6 5.4 6.4 10.6-.3 7.5-4.4 12.6-10 12.6z";

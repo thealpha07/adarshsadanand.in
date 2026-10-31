@@ -2,7 +2,7 @@
  * Where each site lives. One table, so a link never points at a stale URL.
  * In development every app runs on its own port; in production on its own subdomain.
  */
-export type SiteKey = "home" | "thoughts" | "library" | "people" | "vault";
+export type SiteKey = "home" | "thoughts" | "library" | "people" | "vault" | "cci";
 
 const production: Record<SiteKey, string> = {
   home: "https://adarshsadanand.in",
@@ -10,6 +10,7 @@ const production: Record<SiteKey, string> = {
   library: "https://books.adarshsadanand.in",
   people: "https://characters.adarshsadanand.in",
   vault: "https://files.adarshsadanand.in",
+  cci: "https://cci.adarshsadanand.in",
 };
 
 const development: Record<SiteKey, string> = {
@@ -18,12 +19,16 @@ const development: Record<SiteKey, string> = {
   library: "http://localhost:5172",
   people: "http://localhost:5173",
   vault: "http://localhost:5174",
+  cci: "http://localhost:5175",
 };
 
 export const siteUrl = (key: SiteKey, path = ""): string =>
   (import.meta.env.DEV ? development : production)[key] + path;
 
-/** Public navigation. The vault is deliberately absent: it has no public face. */
+/**
+ * Public navigation. The vault is deliberately absent: it has no public face.
+ * Project sites (cci) are reached from the homepage, not the main nav, until they launch.
+ */
 export const publicNav: { key: SiteKey; label: string }[] = [
   { key: "home", label: "Home" },
   { key: "thoughts", label: "Thoughts" },

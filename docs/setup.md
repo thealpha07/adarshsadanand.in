@@ -61,7 +61,7 @@ The first time you sign in to the vault it shows a QR code. Scan it with an auth
 
 **Why:** after this, each push to `main` rebuilds and republishes every site automatically.
 
-Create **five** applications from the same repo. For each one, go to
+Create one application per site (six as of ADR 0008) from the same repo. For each one, go to
 **Workers & Pages → Create application → Import a repository → thealpha07/adarshsadanand.in**.
 
 | Project name | Build command | Deploy command | Custom domain |
@@ -71,6 +71,7 @@ Create **five** applications from the same repo. For each one, go to
 | `as-books` | `npm run build -w @site/books` | `npx wrangler deploy --config apps/books/wrangler.jsonc` | `books.adarshsadanand.in` |
 | `as-people` | `npm run build -w @site/people` | `npx wrangler deploy --config apps/people/wrangler.jsonc` | `characters.adarshsadanand.in` |
 | `as-vault` | `npm run build -w @site/vault` | `npx wrangler deploy --config apps/vault/wrangler.jsonc` | `files.adarshsadanand.in` |
+| `as-cci` | `npm run build -w @site/cci` | `npx wrangler deploy --config apps/cci/wrangler.jsonc` | `cci.adarshsadanand.in` |
 
 Do the following for every project:
 - **Project name** must match exactly, because it is the `name` in that app's `wrangler.jsonc`.

@@ -15,10 +15,12 @@ interface Props {
   actions?: ReactNode;
   /** Content above the title, such as a back link. */
   before?: ReactNode;
+  /** For long single words ("Capability"): a smaller phone size so the word never runs off screen. */
+  longTitle?: boolean;
 }
 
 /** The midnight band that opens every subpage: header, ghost word, title. */
-export function PageBand({ site, tag, title, softTitle, intro, ghost, actions, before }: Props) {
+export function PageBand({ site, tag, title, softTitle, intro, ghost, actions, before, longTitle }: Props) {
   return (
     <section className="band on-dark">
       <div className="band-grid" aria-hidden="true" />
@@ -28,7 +30,7 @@ export function PageBand({ site, tag, title, softTitle, intro, ghost, actions, b
         <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 20, maxWidth: "62ch" }}>
           {before}
           <span className="tag">{tag}</span>
-          <h1 className="grot" style={{ fontSize: "clamp(56px, 9vw, 128px)", lineHeight: 0.88, color: "#fff" }}>
+          <h1 className="grot" style={{ fontSize: longTitle ? "clamp(36px, 9vw, 128px)" : "clamp(56px, 9vw, 128px)", lineHeight: 0.88, color: "#fff" }}>
             {title}
             {softTitle && <> <span className="soft">{softTitle}</span></>}
           </h1>

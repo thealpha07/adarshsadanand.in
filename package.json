@@ -12,6 +12,7 @@
     "dev:books": "npm run dev -w @site/books",
     "dev:people": "npm run dev -w @site/people",
     "dev:vault": "npm run dev -w @site/vault",
+    "dev:cci": "npm run dev -w @site/cci",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present"
   },
