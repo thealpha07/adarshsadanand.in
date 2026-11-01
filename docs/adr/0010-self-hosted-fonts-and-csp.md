@@ -1,4 +1,4 @@
-# 0009. Self-hosted fonts and a Content-Security-Policy
+# 0010. Self-hosted fonts and a Content-Security-Policy
 
 **Status:** Accepted, 1 Nov 2026
 

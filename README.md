@@ -1,6 +1,6 @@
 # adarshsadanand.in
 
-My personal platform: one portfolio and four subdomains, built as one system.
+My personal platform: one portfolio and five subdomains, built as one system.
 
 | Site | Address | Who can see it |
 | --- | --- | --- |
@@ -9,11 +9,12 @@ My personal platform: one portfolio and four subdomains, built as one system.
 | Library | books.adarshsadanand.in | Everyone (notes only if marked public) |
 | People | characters.adarshsadanand.in | Everyone (only people marked public) |
 | Vault and console | files.adarshsadanand.in | Only me, with 2FA |
+| CCI project | cci.adarshsadanand.in | Everyone, but hidden from search until launch |
 
 ## How it fits together
 
 ```
-Browser ──► Cloudflare (DNS, HTTPS, CDN) ──► 5 static sites (Cloudflare Pages)
+Browser ──► Cloudflare (DNS, HTTPS, CDN) ──► 6 static sites (Workers static assets)
                                                    │
                                                    ▼
                               Supabase: Postgres + Auth + Storage
@@ -33,6 +34,7 @@ apps/
   books/     Library (shelves)
   people/    People journal (grid and person pages)
   vault/     Private files plus the editors for every site
+  cci/       CCI scoring tool: project page plus a sample-data demo at /app (ADRs 0008, 0009)
 packages/
   ui/        Design tokens, base styles, header, menu, footer
   data/      Supabase client, row types, read queries, markdown
@@ -47,9 +49,9 @@ docs/        Setup guide, architecture, decisions
 ```bash
 npm install
 cp .env.example .env.local     # optional: the defaults already point at the live project
-npm run dev:home               # http://localhost:5170  (blog 5171, books 5172, people 5173, vault 5174)
+npm run dev:home               # http://localhost:5170  (blog 5171, books 5172, people 5173, vault 5174, cci 5175)
 npm run typecheck
-npm run build                  # builds all five
+npm run build                  # builds all six
 ```
 
 First-time setup of DNS, the database and hosting: [docs/setup.md](docs/setup.md).
@@ -64,6 +66,7 @@ First-time setup of DNS, the database and hosting: [docs/setup.md](docs/setup.md
 - Real content only: no invented numbers, logos or testimonials.
 - WCAG 2.2 AA: keyboard reachable, visible focus, 4.5:1 text contrast, works at 360 px.
 - The database enforces privacy. The UI never has to remember to hide something.
+- Every site sends a Content-Security-Policy and loads nothing from third parties except Supabase and images (ADR 0010).
 - Every decision that has an alternative gets an ADR.
 
 ## Icons

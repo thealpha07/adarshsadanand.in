@@ -1,4 +1,4 @@
-# Security headers for every path. CSP rules and the reasons for each: docs/adr/0009-self-hosted-fonts-and-csp.md
+# Security headers for every path. CSP rules and the reasons for each: docs/adr/0010-self-hosted-fonts-and-csp.md
 # If the Supabase project ever changes, update its address in connect-src here.
 /*
   X-Content-Type-Options: nosniff

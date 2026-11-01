@@ -1,4 +1,4 @@
-/* Fonts are bundled with the site, not loaded from Google (ADR 0009). */
+/* Fonts are bundled with the site, not loaded from Google (ADR 0010). */
 @import "@fontsource-variable/archivo/wdth.css";
 @import "@fontsource/atkinson-hyperlegible/400.css";
 @import "@fontsource/atkinson-hyperlegible/400-italic.css";

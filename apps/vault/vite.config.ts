@@ -6,7 +6,7 @@ export default defineConfig({
   envDir: "../..",
   build: {
     // Keep fonts as real files. Vite would otherwise inline the small ones as data: URLs,
-    // which the Content-Security-Policy (font-src 'self') blocks. See ADR 0009.
+    // which the Content-Security-Policy (font-src 'self') blocks. See ADR 0010.
     assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined),
   },
 });

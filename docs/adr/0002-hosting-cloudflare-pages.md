@@ -1,6 +1,6 @@
 # Hosting: Cloudflare Pages
 
-Status: accepted, 11 Oct 2026
+Status: superseded in part by [0007](0007-workers-static-assets.md), 11 Oct 2026. Cloudflare DNS still stands; the sites are served by Workers static assets, not Pages.
 
 ## Context
 

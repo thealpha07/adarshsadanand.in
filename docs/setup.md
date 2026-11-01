@@ -57,7 +57,7 @@ and every `_public` view `true`.
 The first time you sign in to the vault it shows a QR code. Scan it with an authenticator app
 (Google Authenticator, Microsoft Authenticator, 1Password, Aegis). Every sign-in after that asks for its 6-digit code.
 
-## 5. Host the five sites on Cloudflare (Workers)
+## 5. Host the six sites on Cloudflare (Workers)
 
 **Why:** after this, each push to `main` rebuilds and republishes every site automatically.
 
@@ -82,7 +82,7 @@ Do the following for every project:
   - **Exception, `as-cci`:** it uses Cloudflare's newer Worker Previews, so its Preview command is `npx wrangler preview --config apps/cci/wrangler.jsonc`.
 - After the first deploy, once the zone is Active, go to **Settings → Domains & Routes → Add → Custom domain** and add the domain from the table.
 
-The Supabase URL and publishable key have safe defaults in `packages/data/src/client.ts`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only if they ever change.
+The Supabase URL and publishable key have safe defaults in `packages/data/src/client.ts`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only if they ever change. If the URL changes, also change it in `connect-src` in every `apps/*/public/_headers`, or the browser will block the calls.
 
 ## 6. Let Supabase accept sign-ins from the vault
 
@@ -95,3 +95,4 @@ The Supabase URL and publishable key have safe defaults in `packages/data/src/cl
 - [ ] files.adarshsadanand.in asks for a password, then a code, then shows Files.
 - [ ] Upload a small PDF, download it, delete it.
 - [ ] In GitHub → Actions, run "Keep Supabase awake" once by hand; it should pass.
+- [ ] On each site, open the browser console: there should be no "Content Security Policy" errors.

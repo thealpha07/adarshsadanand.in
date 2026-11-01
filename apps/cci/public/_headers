@@ -1,5 +1,5 @@
-# Security headers for every path. CSP rules and the reasons for each: docs/adr/0009-self-hosted-fonts-and-csp.md
-# This holding page talks to no backend, so it gets the tightest policy.
+# Security headers for every path. CSP rules and the reasons for each: docs/adr/0010-self-hosted-fonts-and-csp.md
+# The CCI demo keeps its data in the browser (ADR 0009) and calls no API, so it gets the tightest policy.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
