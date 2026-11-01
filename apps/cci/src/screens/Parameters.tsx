@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { PageHead, StateBadge, TableBox, usePageTitle } from "../components/ui";
 import { catalog } from "../data/catalog";
 import { fmt2 } from "../domain/scoring";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import { PageHead, StateBadge, TableBox, fmtTime, usePageTitle } from "../components/ui";
 import { catalog } from "../data/catalog";
 import { affectsScore, criteriaOf, responsesFromCriteria, visibleQuestions } from "../domain/questions";

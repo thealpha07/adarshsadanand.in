@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { PageHead, TableBox, fmtTime, usePageTitle } from "../components/ui";
 import { catalog } from "../data/catalog";
 import type { Actor } from "../domain/types";

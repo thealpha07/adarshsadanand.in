@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router";
 import { PageBand, SiteFooter, siteUrl } from "@site/ui";
 import { credit, intro, plan, timeline, type Stage } from "./content";
 import { Audit } from "./screens/Audit";

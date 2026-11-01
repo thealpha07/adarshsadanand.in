@@ -7,5 +7,10 @@
   "types": "src/index.ts",
   "peerDependencies": {
     "react": "^18.3.1"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0"
   }
 }
