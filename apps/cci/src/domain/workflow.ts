@@ -1,3 +1,4 @@
+import { criteriaOf, criteriaTotal, invalidResponse, missingResponses, responseLabel, responsesFromCriteria } from "./questions";
 import { scoreCycle } from "./scoring";
 import type {
   Actor, Answer, AuditEvent, BuStatus, Catalog, CycleData, Domain, Extract, ParamRecord, ParamState, ParameterDef, Role,
@@ -44,7 +45,9 @@ export const STATE_LABEL: Record<ParamState, string> = {
 const EDITABLE: ParamState[] = ["not_started", "draft", "returned"];
 export const isEditable = (s: ParamState) => EDITABLE.includes(s);
 
-export function validateAnswer(def: ParameterDef, a: Pick<Answer, "numerator" | "denominator">): string | null {
+export function validateAnswer(def: ParameterDef, a: Pick<Answer, "numerator" | "denominator" | "responses">): string | null {
+  const badResponse = invalidResponse(def, a.responses, def.kind === "qualitative" ? null : a.numerator);
+  if (badResponse) return badResponse;
   if (def.kind === "qualitative") return null;
   for (const v of [a.numerator, a.denominator]) {
     if (v !== null && (!Number.isFinite(v) || v < 0)) return "Enter numbers of 0 or more.";
@@ -60,13 +63,14 @@ export type EvidenceCheck =
   | { status: "match"; extract: Extract }
   | { status: "mismatch"; extract: Extract; summary: string };
 
-type Comparable = Pick<ParamRecord, "numerator" | "denominator" | "criteria" | "evidenceAttached">;
+type Comparable = Pick<ParamRecord, "numerator" | "denominator" | "responses" | "evidenceAttached">;
 
 export function compareEvidence(def: ParameterDef, r: Comparable, catalog: Catalog): EvidenceCheck {
   const extract = catalog.extracts[def.id];
   if (!r.evidenceAttached || !extract) return { status: "none" };
   if (def.kind === "qualitative") {
-    const differs = (extract.criteria ?? []).filter((c, i) => c !== Boolean(r.criteria[i])).length;
+    const mine = criteriaOf(def, r.responses);
+    const differs = (extract.criteria ?? []).filter((c, i) => c !== mine[i]).length;
     return differs ? { status: "mismatch", extract, summary: `${differs} criteria differ from the document.` } : { status: "match", extract };
   }
   const parts: string[] = [];
@@ -90,6 +94,8 @@ export function submitBlockers(def: ParameterDef, r: Answer & Pick<ParamRecord, 
     if (r.numerator === null || r.denominator === null) out.push("Answer both questions.");
     else if (r.denominator === 0 && !r.naReason.trim()) out.push("Give a reason for marking this N/A.");
   }
+  const missing = missingResponses(def, r.responses);
+  if (missing.length) out.push(`Answer ${missing.length === 1 ? "this question" : `these ${missing.length} questions`}: ${missing.map((q) => q.label).join("; ")}.`);
   if (!r.evidenceAttached) out.push("Attach the evidence.");
   else if (compareEvidence(def, r, catalog).status === "mismatch" && !r.mismatchReason.trim()) {
     out.push("Correct your answer to match the evidence, or give a reason.");
@@ -111,8 +117,8 @@ export function buProgress(state: CycleData, buId: string, catalog: Catalog) {
 
 export const allBusSigned = (state: CycleData, catalog: Catalog) => catalog.bus.every((b) => state.signedBus[b.id]);
 
-function answerLabel(def: ParameterDef, r: Pick<ParamRecord, "numerator" | "denominator" | "criteria">) {
-  if (def.kind === "qualitative") return `${r.criteria.filter(Boolean).length} of ${def.criteria?.length ?? 0} criteria`;
+function answerLabel(def: ParameterDef, r: Pick<ParamRecord, "numerator" | "denominator" | "responses">) {
+  if (def.kind === "qualitative") return `${criteriaOf(def, r.responses).filter(Boolean).length} of ${criteriaTotal(def)} criteria`;
   if (r.numerator === null && r.denominator === null) return "Empty";
   return `${r.numerator ?? "?"} of ${r.denominator ?? "?"}`;
 }
@@ -159,6 +165,12 @@ function run(action: Action, state: CycleData, catalog: Catalog, log: Log, at: s
     const from = answerLabel(def, old);
     const to = answerLabel(def, next);
     if (from !== to) log("team", from === "Empty" ? "Entered answer" : "Changed answer", paramTarget(def), from, to);
+    // Every questionnaire change is kept, whether or not it affects the score.
+    for (const q of def.questions) {
+      const was = responseLabel(q, old.responses);
+      const now = responseLabel(q, next.responses);
+      if (was !== now) log("team", "Questionnaire answer changed", paramTarget(def), was, now, q.label);
+    }
     if (oldCheck !== newCheck && newCheck !== "none") {
       log("system", newCheck === "mismatch" ? "Mismatch flagged (simulated)" : "Evidence now matches (simulated)", paramTarget(def), to, `Document: ${answerLabel(def, documentValues(def, catalog))}`);
     }
@@ -275,5 +287,5 @@ function lockBu(state: CycleData, buId: string, catalog: Catalog, log: Log, at: 
 
 function documentValues(def: ParameterDef, catalog: Catalog) {
   const e = catalog.extracts[def.id];
-  return { numerator: e?.numerator ?? null, denominator: e?.denominator ?? null, criteria: e?.criteria ?? [] };
+  return { numerator: e?.numerator ?? null, denominator: e?.denominator ?? null, responses: responsesFromCriteria(def, e?.criteria ?? []) };
 }

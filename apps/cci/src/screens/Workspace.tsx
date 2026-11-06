@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { PageHead, StateBadge, TableBox, fmtTime, usePageTitle } from "../components/ui";
 import { catalog } from "../data/catalog";
+import { affectsScore, criteriaOf, responsesFromCriteria, visibleQuestions } from "../domain/questions";
 import { fmt2, scoreCycle, scoreParameter } from "../domain/scoring";
 import type { Answer, ParamRecord, ParameterDef } from "../domain/types";
 import { compareEvidence, isEditable, ROLE_LABEL, submitBlockers, validateAnswer } from "../domain/workflow";
@@ -19,14 +20,14 @@ export function Workspace() {
   }
   const r = state.params[def.id];
   // Saved values changing, from this screen or another role, restart the form from them.
-  return <Form key={`${def.id}-${r.state}-${r.numerator}-${r.denominator}-${r.criteria.join()}`} def={def} record={r} />;
+  return <Form key={`${def.id}-${r.state}-${r.numerator}-${r.denominator}-${JSON.stringify(r.responses)}`} def={def} record={r} />;
 }
 
 function Form({ def, record: r }: { def: ParameterDef; record: ParamRecord }) {
   const { state, score, dispatch, announce } = useCci();
   const [num, setNum] = useState(r.numerator === null ? "" : String(r.numerator));
   const [den, setDen] = useState(r.denominator === null ? "" : String(r.denominator));
-  const [criteria, setCriteria] = useState<boolean[]>(def.criteria ? def.criteria.map((_, i) => Boolean(r.criteria[i])) : []);
+  const [responses, setResponses] = useState<Record<string, string>>(r.responses);
   const [scope, setScope] = useState(r.scope);
   const [mismatchReason, setMismatchReason] = useState(r.mismatchReason);
   const [naReason, setNaReason] = useState(r.naReason);
@@ -38,7 +39,7 @@ function Form({ def, record: r }: { def: ParameterDef; record: ParamRecord }) {
   const canReview = open && state.role === "reviewer" && r.state === "review";
   const buName = catalog.bus.find((b) => b.id === def.buId)?.name ?? def.buId;
 
-  const draft: Answer = { numerator: parseNum(num), denominator: parseNum(den), criteria, scope, mismatchReason, naReason };
+  const draft: Answer = { numerator: parseNum(num), denominator: parseNum(den), responses, scope, mismatchReason, naReason };
   const invalid = validateAnswer(def, draft);
   const safe = invalid ? { ...draft, numerator: null, denominator: null } : draft;
   const live = scoreParameter(def, safe);
@@ -54,7 +55,7 @@ function Form({ def, record: r }: { def: ParameterDef; record: ParamRecord }) {
   };
   const useDocument = () => {
     const e = catalog.extracts[def.id];
-    if (def.kind === "qualitative") setCriteria(e.criteria ?? []);
+    if (def.kind === "qualitative") setResponses({ ...responses, ...responsesFromCriteria(def, e.criteria ?? []) });
     else { setNum(String(e.numerator)); setDen(String(e.denominator)); }
     setMismatchReason("");
   };
@@ -89,16 +90,7 @@ function Form({ def, record: r }: { def: ParameterDef; record: ParamRecord }) {
             <h2 id="q-h" className="app-h2">Questionnaire</h2>
             <fieldset className="app-fieldset" disabled={!canEdit}>
               <legend className="visually-hidden">Answers for {def.name}</legend>
-              {def.kind === "qualitative" ? (
-                <div className="app-stack-sm">
-                  {(def.criteria ?? []).map((c, i) => (
-                    <label key={c} className="app-check">
-                      <input type="checkbox" checked={criteria[i]} onChange={(e) => setCriteria(criteria.map((v, j) => (j === i ? e.target.checked : v)))} />
-                      <span>{c}</span>
-                    </label>
-                  ))}
-                </div>
-              ) : (
+              {def.kind !== "qualitative" && (
                 <>
                   <div className="field">
                     <label htmlFor="den">{def.denominatorLabel}</label>
@@ -107,10 +99,33 @@ function Form({ def, record: r }: { def: ParameterDef; record: ParamRecord }) {
                   <div className="field">
                     <label htmlFor="num">{def.numeratorLabel}</label>
                     <input id="num" type="number" min="0" inputMode="decimal" value={num} onChange={(e) => setNum(e.target.value)} aria-describedby={invalid ? "num-err" : undefined} />
-                    {invalid && <p id="num-err" className="error-text">{invalid}</p>}
                   </div>
                 </>
               )}
+              {visibleQuestions(def, responses).map((q) => (
+                <div className="field" key={q.id}>
+                  <div className="app-q-head">
+                    <label htmlFor={`q-${q.id}`}>{q.label}{q.required ? "" : " (optional)"}</label>
+                    <span className={affectsScore(q) ? "app-q-tag is-score" : "app-q-tag"}>{affectsScore(q) ? "Affects score" : "For the record"}</span>
+                  </div>
+                  {q.kind === "list" ? (
+                    <select id={`q-${q.id}`} value={responses[q.id] ?? ""} onChange={(e) => setResponses({ ...responses, [q.id]: e.target.value })}>
+                      <option value="">Choose</option>
+                      {q.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  ) : (
+                    <input
+                      id={`q-${q.id}`}
+                      type={q.kind === "number" ? "number" : "text"}
+                      min={q.kind === "number" ? "0" : undefined}
+                      inputMode={q.kind === "number" ? "decimal" : undefined}
+                      value={responses[q.id] ?? ""}
+                      onChange={(e) => setResponses({ ...responses, [q.id]: e.target.value })}
+                    />
+                  )}
+                </div>
+              ))}
+              {invalid && <p id="num-err" className="error-text" role="alert">{invalid}</p>}
               <div className="field">
                 <label htmlFor="scope">Period or scope covered</label>
                 <input id="scope" value={scope} onChange={(e) => setScope(e.target.value)} />
@@ -206,13 +221,14 @@ function Form({ def, record: r }: { def: ParameterDef; record: ParamRecord }) {
                   <table className="app-table">
                     <thead><tr><th>Criterion</th><th>Answer</th><th>Document</th></tr></thead>
                     <tbody>
-                      {(def.criteria ?? []).map((c, i) => {
+                      {def.questions.filter((q) => q.effect === "criterion").map((q, i) => {
                         const doc = check.extract.criteria?.[i];
-                        const diff = doc !== Boolean(criteria[i]);
+                        const mine = criteriaOf(def, responses)[i];
+                        const diff = doc !== mine;
                         return (
-                          <tr key={c}>
-                            <td>{c}</td>
-                            <td className={diff ? "app-diff" : ""}>{criteria[i] ? "Yes" : "No"}</td>
+                          <tr key={q.id}>
+                            <td>{q.label}</td>
+                            <td className={diff ? "app-diff" : ""}>{mine ? "Yes" : "No"}</td>
                             <td className={diff ? "app-diff" : ""}>{doc ? "Yes" : "No"}</td>
                           </tr>
                         );

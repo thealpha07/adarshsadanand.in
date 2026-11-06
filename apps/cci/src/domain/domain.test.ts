@@ -8,7 +8,7 @@ import type { Answer, CycleData, ParamRecord, Role } from "./types";
 const AT = "2026-11-06T10:00:00.000Z";
 const def = (id: number) => defs.find((d) => d.id === id)!;
 const answer = (r: ParamRecord, n: number | null, d: number | null, extra: Partial<Answer> = {}): Answer => ({
-  numerator: n, denominator: d, criteria: r.criteria, scope: r.scope, mismatchReason: r.mismatchReason, naReason: r.naReason, ...extra,
+  numerator: n, denominator: d, responses: r.responses, scope: r.scope, mismatchReason: r.mismatchReason, naReason: r.naReason, ...extra,
 });
 const act = (s: CycleData, role: Role, a: Action): CycleData => {
   const res = applyAction({ ...s, role }, a, catalog, AT);
@@ -41,22 +41,22 @@ describe("scoring against the worked numbers in the spec", () => {
   });
 
   it("scores the standard, capped, inverse and qualitative cases", () => {
-    const base = { criteria: [] as boolean[] };
+    const base = { responses: {} };
     expect(scoreParameter(def(2), { ...base, numerator: 380, denominator: 480 }).points).toBe(14.25);
     expect(scoreParameter(def(2), { ...base, numerator: 420, denominator: 480 }).points).toBe(15.75);
     expect(scoreParameter(def(1), { ...base, numerator: 90, denominator: 1000 }).points).toBe(7.2);
     expect(scoreParameter(def(1), { ...base, numerator: 200, denominator: 1000 }).points).toBe(8);
     expect(scoreParameter(def(19), { ...base, numerator: 40, denominator: 100 }).points).toBe(7.2);
     expect(scoreParameter(def(12), { ...base, numerator: 1, denominator: 4 }).points).toBe(0.75);
-    expect(scoreParameter(def(21), { numerator: null, denominator: null, criteria: [true, true, true, false] }).points).toBe(3);
+    expect(scoreParameter(def(21), { numerator: null, denominator: null, responses: seed().params[21].responses }).points).toBe(3);
   });
 
   it("rounds half up", () => {
-    expect(scoreParameter(def(2), { criteria: [], numerator: 390, denominator: 480 }).points).toBe(14.63);
+    expect(scoreParameter(def(2), { responses: {}, numerator: 390, denominator: 480 }).points).toBe(14.63);
   });
 
   it("treats a zero denominator as N/A with full points", () => {
-    const r = scoreParameter(def(9), { criteria: [], numerator: 0, denominator: 0 });
+    const r = scoreParameter(def(9), { responses: {}, numerator: 0, denominator: 0 });
     expect(r.notApplicable).toBe(true);
     expect(r.points).toBe(2);
   });
@@ -118,6 +118,77 @@ describe("scoring against the worked numbers in the spec", () => {
     expect(score(s).total).toBe(80.93);
     expect(score(s).bandRating).toBe("Manageable");
     expect(score(s).rating).toBe("Fail");
+  });
+});
+
+describe("questionnaires", () => {
+  const score2 = (numerator: number, responses: Record<string, string>) =>
+    scoreParameter(def(2), { numerator, denominator: 480, responses });
+
+  it("gives every parameter a set with a value list and at least one other type", () => {
+    for (const d of defs) {
+      expect(d.questions.length).toBeGreaterThanOrEqual(2);
+      expect(d.questions.some((q) => q.kind === "list")).toBe(true);
+      expect(d.questions.some((q) => q.kind !== "list")).toBe(true);
+    }
+    const kinds = new Set(defs.flatMap((d) => d.questions.map((q) => q.kind)));
+    expect([...kinds].sort()).toEqual(["list", "number", "text"]);
+    const ids = defs.flatMap((d) => d.questions.map((q) => q.id));
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("starts with sample answers that leave the scores unchanged", () => {
+    expect(score(seed()).total).toBe(66.68);
+  });
+
+  it("excludes numeric answers from the numerator, keeping the SEBI formula", () => {
+    const r = score2(420, { "2-retest": "some", "2-not-retested": "40" });
+    expect(r.points).toBe(14.25);
+    expect(r.steps[0]).toContain("420 − 40");
+  });
+
+  it("ignores a conditional question while its parent answer hides it", () => {
+    expect(score2(420, { "2-retest": "all", "2-not-retested": "40" }).points).toBe(15.75);
+  });
+
+  it("lets a value-list answer remove credit", () => {
+    const r = scoreParameter(def(1), { numerator: 90, denominator: 1000, responses: { "1-status": "proposed" } });
+    expect(r.points).toBe(0);
+    expect(r.steps[0]).toContain("Not counted");
+  });
+
+  it("uses value lists for the criteria of #21", () => {
+    const responses = { ...seed().params[21].responses, "21-observation": "none" };
+    expect(scoreParameter(def(21), { numerator: null, denominator: null, responses }).points).toBe(4);
+    const incomplete: Record<string, string> = { ...responses };
+    delete incomplete["21-exists"];
+    expect(scoreParameter(def(21), { numerator: null, denominator: null, responses: incomplete }).answered).toBe(false);
+  });
+
+  it("refuses exclusions larger than the numerator", () => {
+    const s = seed();
+    const bad = answer(s.params[2], 10, 480, { responses: { ...s.params[2].responses, "2-retest": "some", "2-not-retested": "11" } });
+    expect(refused(s, "team", { type: "save", id: 2, answer: bad })).toContain("cannot be more than");
+  });
+
+  it("blocks submission until required questions are answered", () => {
+    const r = seed().params[2];
+    const blockers = submitBlockers(def(2), { ...answer(r, 380, 480, { responses: { ...r.responses, "2-scan": "" } }), evidenceAttached: true }, catalog);
+    expect(blockers.join()).toContain("Scan type");
+  });
+
+  it("records every questionnaire change, including ones with no score effect", () => {
+    let s = seed();
+    s = act(s, "team", { type: "save", id: 2, answer: answer(s.params[2], 420, 480, { responses: { ...s.params[2].responses, "2-tool": "Scanner A" } }) });
+    const e = s.audit.find((x) => x.action === "Questionnaire answer changed")!;
+    expect([e.comment, e.newValue]).toEqual(["Scanning tool", "Scanner A"]);
+  });
+
+  it("recalculates and records the score when an answer changes it", () => {
+    let s = seed();
+    s = act(s, "team", { type: "save", id: 2, answer: answer(s.params[2], 420, 480) });
+    s = act(s, "team", { type: "save", id: 2, answer: answer(s.params[2], 420, 480, { responses: { ...s.params[2].responses, "2-retest": "some", "2-not-retested": "40" } }) });
+    expect(s.audit.at(-1)!.newValue).toBe("80.93 Manageable");
   });
 });
 

@@ -16,6 +16,36 @@ export type CycleState = "open" | "with_signatory" | "declared";
 /** ratio: higher is better, capped at target. inverse: lower is better. qualitative: criteria met. */
 export type ScoringKind = "ratio" | "inverse" | "qualitative";
 
+export interface QuestionOption {
+  value: string;
+  label: string;
+  /** Choosing this means nothing can be counted for the parameter, such as an unapproved budget. */
+  noCredit?: boolean;
+  /** For a criterion question: whether this answer meets the criterion. */
+  meetsCriterion?: boolean;
+}
+
+/**
+ * How an answer reaches the score, always through the formula's inputs:
+ * record: kept for the audit trail only (a list option can still be noCredit).
+ * excludeFromNumerator: a count of items that must not be counted as achieved.
+ * criterion: one of a qualitative parameter's criteria.
+ */
+export type QuestionEffect = "record" | "excludeFromNumerator" | "criterion";
+
+export interface Question {
+  id: string;
+  label: string;
+  kind: "list" | "number" | "text";
+  effect: QuestionEffect;
+  required: boolean;
+  options?: QuestionOption[];
+  /** Only asked when another list question has this value. */
+  showIf?: { question: string; value: string };
+  /** The value the sample organisation starts with. */
+  sample?: string;
+}
+
 export interface ParameterDef {
   id: number;
   name: string;
@@ -29,7 +59,7 @@ export interface ParameterDef {
   formula: string;
   numeratorLabel: string;
   denominatorLabel: string;
-  criteria?: string[];
+  questions: Question[];
 }
 
 export interface BusinessUnit {
@@ -54,7 +84,8 @@ export interface Catalog {
 export interface Answer {
   numerator: number | null;
   denominator: number | null;
-  criteria: boolean[];
+  /** Questionnaire answers by question id, always stored as text. */
+  responses: Record<string, string>;
   scope: string;
   mismatchReason: string;
   naReason: string;
