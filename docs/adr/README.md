@@ -10,3 +10,4 @@ Each file records one decision: the context, what was decided, the alternatives 
 - [Design direction B: midnight front door, calm rooms](0006-design-direction.md)
 - [Hosting: Workers static assets](0007-workers-static-assets.md)
 - [Project subdomains live in the monorepo](0008-project-subdomains.md)
+- [The CCI MVP runs in the browser, behind a storage port](0009-cci-mvp-in-the-browser.md)

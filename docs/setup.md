@@ -79,6 +79,7 @@ Do the following for every project:
   - Leave the root directory as `/`.
   - Add the build variable `NODE_VERSION` = `22`.
 - Leave the non-production branch deploy command as `npx wrangler versions upload --config apps/<app>/wrangler.jsonc`, or turn it off.
+  - **Exception, `as-cci`:** it uses Cloudflare's newer Worker Previews, so its Preview command is `npx wrangler preview --config apps/cci/wrangler.jsonc`.
 - After the first deploy, once the zone is Active, go to **Settings → Domains & Routes → Add → Custom domain** and add the domain from the table.
 
 The Supabase URL and publishable key have safe defaults in `packages/data/src/client.ts`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only if they ever change.
