@@ -1,7 +1,7 @@
 import type { CycleData, ParamRecord, ParamState } from "../domain/types";
-import { defs, samplePolicy, sampleValues } from "./catalog";
+import { defs, sampleValues } from "./catalog";
 
-export const DATA_VERSION = 1;
+export const DATA_VERSION = 2;
 
 /** Parameters the demo starts part-way through, each showing a different scoring case. */
 const IN_REVIEW = [1, 12, 21];
@@ -19,7 +19,8 @@ export function seedCycle(at: string): CycleData {
       state,
       numerator: d.id === 2 || !values ? null : values[0],
       denominator: d.id === 2 || !values ? null : values[1],
-      criteria: d.kind === "qualitative" ? samplePolicy : [],
+      // Prefilled so the sample starts complete. The first list option and 0 exclusions leave the scores as designed.
+      responses: Object.fromEntries(d.questions.map((q) => [q.id, q.sample ?? (q.kind === "list" ? q.options?.[0].value ?? "" : q.kind === "number" ? "0" : "Sample entry")])),
       scope: "FY 2025-26",
       mismatchReason: "",
       naReason: "",

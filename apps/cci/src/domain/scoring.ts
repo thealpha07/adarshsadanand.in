@@ -1,3 +1,4 @@
+import { allCriteriaAnswered, criteriaOf, criteriaTotal, formulaEffects } from "./questions";
 import type { Domain, ParamRecord, ParameterDef, ScoringConfig } from "./types";
 
 /** Rounds half up, after removing floating-point noise, so results match a hand calculation. */
@@ -23,20 +24,19 @@ export interface ParameterScore {
   steps: string[];
 }
 
-type Scorable = Pick<ParamRecord, "numerator" | "denominator" | "criteria">;
+type Scorable = Pick<ParamRecord, "numerator" | "denominator" | "responses">;
 
 export function scoreParameter(def: ParameterDef, r: Scorable): ParameterScore {
-  const targetLabel =
-    def.kind === "qualitative" ? `${def.criteria?.length ?? 0} of ${def.criteria?.length ?? 0}` : shortPct(def.target);
+  const targetLabel = def.kind === "qualitative" ? `${criteriaTotal(def)} of ${criteriaTotal(def)}` : shortPct(def.target);
   const base = { id: def.id, targetLabel };
   const blank: ParameterScore = {
     ...base, answered: false, notApplicable: false, attainment: 0, points: 0, lost: def.weight, actualLabel: "Not answered", steps: [],
   };
 
   if (def.kind === "qualitative") {
-    const total = def.criteria?.length ?? 0;
-    if (total === 0) return blank;
-    const met = r.criteria.filter(Boolean).length;
+    const total = criteriaTotal(def);
+    if (total === 0 || !allCriteriaAnswered(def, r.responses)) return blank;
+    const met = criteriaOf(def, r.responses).filter(Boolean).length;
     const attainment = met / total;
     const points = roundTo(def.weight * attainment, 2);
     return {
@@ -56,15 +56,24 @@ export function scoreParameter(def: ParameterDef, r: Scorable): ParameterScore {
     };
   }
 
-  const actual = r.numerator / r.denominator;
-  const first = `${r.numerator} ÷ ${r.denominator} = ${pct(actual)}`;
+  // Questionnaire answers can reduce what counts as achieved. The SEBI formula itself never changes.
+  const effects = formulaEffects(def, r.responses);
+  const counted = effects.noCredit ? 0 : Math.max(r.numerator - effects.excludedTotal, 0);
+  const inputSteps: string[] = [];
+  if (effects.noCredit) {
+    inputSteps.push(`Not counted: "${effects.noCredit.question.label}" is "${effects.noCredit.option.label}", so the numerator is 0`);
+  } else if (effects.excludedTotal > 0) {
+    inputSteps.push(`${r.numerator} − ${effects.excludedTotal} left out by the questionnaire = ${counted} counted`);
+  }
+  const actual = counted / r.denominator;
+  const first = `${counted} ÷ ${r.denominator} = ${pct(actual)}`;
 
   if (def.kind === "inverse") {
     const attainment = 1 - actual;
     const points = roundTo(def.weight * attainment, 2);
     return {
       ...base, answered: true, notApplicable: false, attainment, points, lost: roundTo(def.weight - points, 2), actualLabel: shortPct(actual),
-      steps: [first, `Lower is better: (1 − ${pct(actual)}) × ${def.weight} = ${fmt2(points)}`],
+      steps: [...inputSteps, first, `Lower is better: (1 − ${pct(actual)}) × ${def.weight} = ${fmt2(points)}`],
     };
   }
 
@@ -74,6 +83,7 @@ export function scoreParameter(def: ParameterDef, r: Scorable): ParameterScore {
   return {
     ...base, answered: true, notApplicable: false, attainment, points, lost: roundTo(def.weight - points, 2), actualLabel: shortPct(actual),
     steps: [
+      ...inputSteps,
       first,
       uncapped > 1
         ? `At or above the ${shortPct(def.target)} target, so full ${def.weight} points`

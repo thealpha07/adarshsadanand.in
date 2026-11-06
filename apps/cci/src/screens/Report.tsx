@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PageHead, TableBox, fmtDateTime, usePageTitle } from "../components/ui";
 import { CYCLE, ORG, catalog } from "../data/catalog";
+import { affectsScore, responseLabel, visibleQuestions } from "../domain/questions";
 import { fmt2, rankGaps, roundTo } from "../domain/scoring";
 import type { Domain } from "../domain/types";
 import { ROLE_LABEL } from "../domain/workflow";
@@ -49,6 +50,7 @@ export function Report() {
             <li>Rating uses band floors: 91, 81, 71, 61 and 51.</li>
             <li>A zero denominator gets full points, with a reason the Reviewer accepts.</li>
             <li>Domain cutoffs are placeholders.</li>
+            <li>Questionnaire wording and which answers affect inputs are drafts, not SEBI text.</li>
           </ul>
         </section>
 
@@ -153,6 +155,25 @@ export function Report() {
           </table>
         </TableBox>
       </section>
+
+      <details className="card app-record">
+        <summary className="app-h2">Questionnaire record</summary>
+        <TableBox label="Questionnaire answers for each parameter">
+          <table className="app-table app-wide">
+            <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Use</th></tr></thead>
+            <tbody>
+              {catalog.defs.flatMap((d) => visibleQuestions(d, state.params[d.id].responses).map((q) => (
+                <tr key={q.id}>
+                  <td className="num">{d.id}</td>
+                  <td>{q.label}</td>
+                  <td>{responseLabel(q, state.params[d.id].responses)}</td>
+                  <td>{affectsScore(q) ? "Affects score" : "For the record"}</td>
+                </tr>
+              )))}
+            </tbody>
+          </table>
+        </TableBox>
+      </details>
     </>
   );
 }

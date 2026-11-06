@@ -1,4 +1,5 @@
 import type { BusinessUnit, Catalog, Extract, ParameterDef, Domain, ScoringKind } from "../domain/types";
+import { questionsFor } from "./questions";
 
 /**
  * The 23 CCI parameters as read from a copy of CSCRF Annexure-K (Table 27).
@@ -41,17 +42,10 @@ const rows: Row[] = [
   [23, "Automated CSCRF Compliance", "Not stated", "Overall", 5, 1, "ratio", "rc", "Standards with automated compliance ÷ total CSCRF standards", "Standards with automated compliance", "Total CSCRF standards"],
 ];
 
-export const POLICY_CRITERIA = [
-  "A cybersecurity policy exists",
-  "It was revised at the required frequency",
-  "It has the required approval",
-  "It has no open audit observation",
-];
-
 export const defs: ParameterDef[] = rows.map(
   ([id, name, measureId, domain, weight, target, kind, buId, formula, numeratorLabel, denominatorLabel]) => ({
     id, name, measureId, domain, weight, target, kind, buId, formula, numeratorLabel, denominatorLabel,
-    ...(kind === "qualitative" ? { criteria: POLICY_CRITERIA } : {}),
+    questions: questionsFor(id),
   }),
 );
 
@@ -64,6 +58,7 @@ export const sampleValues: Record<number, [number, number]> = {
   9: [12, 12], 10: [88, 100], 11: [18, 20], 12: [1, 4], 13: [96, 100], 14: [92, 100], 15: [85, 100], 16: [14, 20],
   17: [60, 100], 18: [80, 100], 19: [40, 100], 20: [17, 20], 22: [78, 100], 23: [60, 100],
 };
+/** What the sample policy document shows for the four criteria of #21. */
 export const samplePolicy = [true, true, true, false];
 
 const extracts: Record<number, Extract> = {};
