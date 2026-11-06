@@ -14,6 +14,7 @@
     "dev:vault": "npm run dev -w @site/vault",
     "dev:cci": "npm run dev -w @site/cci",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present"
   },
   "engines": {

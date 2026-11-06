@@ -7,10 +7,10 @@ export const intro = {
   title: "Cyber Capability",
   soft: "Index",
   line:
-    "A scoring tool for the Cyber Capability Index in SEBI's Cybersecurity and Cyber Resilience Framework (CSCRF). It's my M.Tech project, and it's being built now.",
+    "A scoring tool for the Cyber Capability Index in SEBI's Cybersecurity and Cyber Resilience Framework (CSCRF). It's my M.Tech project, and it's being built now. The demo uses a fictional organisation and sample data.",
 };
 
-/** What the tool is for. Written as plans, because none of it is live yet. */
+/** What the tool is for. Written as plans: the demo at /app uses sample data and is not the finished tool. */
 export const plan = [
   {
     title: "Assess",

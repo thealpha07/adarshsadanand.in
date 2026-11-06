@@ -1,19 +1,37 @@
 import { useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import { PageBand, SiteFooter, siteUrl } from "@site/ui";
 import { credit, intro, plan, timeline, type Stage } from "./content";
+import { Audit } from "./screens/Audit";
+import { AppFrame } from "./screens/AppFrame";
+import { Overview } from "./screens/Overview";
+import { Parameters } from "./screens/Parameters";
+import { Report } from "./screens/Report";
+import { Signoff } from "./screens/Signoff";
+import { Workspace } from "./screens/Workspace";
+import { CciProvider } from "./state/store";
 import "./cci.css";
+import "./app.css";
 
 /**
- * cci.adarshsadanand.in. Today: the project's holding page.
- * Later: the tool's screens become routes here (for example /assess, /report),
- * so the address people bookmark now keeps working.
+ * cci.adarshsadanand.in. "/" stays the project's holding page; "/app" is the tool's demo.
+ * See docs/adr/0009-cci-mvp-in-the-browser.md.
  */
 export function App() {
   return (
     <BrowserRouter>
       <div style={{ ["--site" as string]: "var(--amber)", ["--site-light" as string]: "#e0a84a" }}>
         <Routes>
+          <Route path="/app" element={<CciProvider><AppFrame /></CciProvider>}>
+            <Route index element={<Overview />} />
+            <Route path="parameters" element={<Parameters />} />
+            <Route path="parameters/:id" element={<Workspace />} />
+            <Route path="bu" element={<Navigate to="cso" replace />} />
+            <Route path="bu/:id" element={<Signoff />} />
+            <Route path="report" element={<Report />} />
+            <Route path="audit" element={<Audit />} />
+            <Route path="*" element={<Navigate to="/app" replace />} />
+          </Route>
           <Route path="*" element={<About />} />
         </Routes>
         <SiteFooter>
@@ -38,7 +56,12 @@ function About() {
         ghost="CCI"
         longTitle
         intro={<p style={{ margin: 0 }}>{intro.line}</p>}
-        actions={<a className="btn btn-ghost-light" href={siteUrl("home", "/#contact")}>Ask me about it</a>}
+        actions={
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <Link className="btn btn-light" to="/app">Open the demo</Link>
+            <a className="btn btn-ghost-light" href={siteUrl("home", "/#contact")}>Ask me about it</a>
+          </div>
+        }
       />
       <main id="main" className="wrap cci">
         <section className="cci-section" aria-labelledby="plan-h">

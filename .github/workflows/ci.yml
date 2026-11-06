@@ -1,4 +1,4 @@
-# Checks every push and pull request: types, then a production build of all five apps.
+# Checks every push and pull request: types, tests, then a production build of all the apps.
 # Cloudflare Pages does the deploying; this job makes sure nothing broken reaches it.
 name: CI
 
@@ -18,4 +18,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm test
       - run: npm run build
