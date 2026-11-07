@@ -63,13 +63,21 @@ export function App() {
   );
 }
 
-/** A missing or broken cover image falls back to a typeset cover, never a broken-image icon. */
+/**
+ * Every cover sits on a white mat (`.cover-frame`), like the book card on the homepage hero.
+ * The image is scaled to fit inside it, never cropped: covers come in many shapes (manga, box sets, scans).
+ * A missing or broken cover falls back to a typeset cover on the same mat, never a broken-image icon.
+ */
 function Cover({ book, className }: { book: Book; className: string }) {
   const [failed, setFailed] = useState(false);
-  return book.cover_url && !failed ? (
-    <img src={book.cover_url} alt={`Cover of ${book.title}`} className={className} loading="lazy" onError={() => setFailed(true)} />
-  ) : (
-    <div className={`${className} cover-empty`} aria-hidden="true"><span className="grot">{book.title}</span></div>
+  return (
+    <div className={`cover-frame ${className}`}>
+      {book.cover_url && !failed ? (
+        <img src={book.cover_url} alt={`Cover of ${book.title}`} loading="lazy" onError={() => setFailed(true)} />
+      ) : (
+        <div className="cover-empty" aria-hidden="true"><span className="grot">{book.title}</span></div>
+      )}
+    </div>
   );
 }
 
@@ -86,14 +94,30 @@ function NowReading({ book }: { book: Book }) {
   );
 }
 
+const STAR = "m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z";
+const Star = ({ filled }: { filled: boolean }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
+    <path d={STAR} />
+  </svg>
+);
+
+/**
+ * Ratings come in half steps (0.5 to 5). Each star is an outline with a filled copy on top,
+ * cropped to 0 %, 50 % or 100 % of its width. Plain CSS clipping, so no SVG ids can clash between cards.
+ */
 function Stars({ rating }: { rating: number }) {
   return (
-    <span role="img" aria-label={`Rated ${rating} of 5`} style={{ display: "flex", gap: 2 }}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill={i <= rating ? "#0b0f14" : "none"} stroke="#0b0f14" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
-          <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
-        </svg>
-      ))}
+    <span role="img" aria-label={`Rated ${rating} of 5`} className="stars">
+      {[1, 2, 3, 4, 5].map((i) => {
+        const fill = Math.min(Math.max(rating - (i - 1), 0), 1);
+        return (
+          <span key={i} className="star">
+            <Star filled={false} />
+            {fill > 0 && <span className="star-fill" style={{ width: `${fill * 100}%` }}><Star filled /></span>}
+          </span>
+        );
+      })}
+      <span className="mono star-value" aria-hidden="true">{rating}</span>
     </span>
   );
 }
@@ -104,7 +128,7 @@ function BookCard({ book }: { book: Book }) {
       <Cover book={book} className="book-cover" />
       <span className="grot" style={{ fontSize: 18, lineHeight: "21px" }}>{book.title}</span>
       <span className="small body-2">{book.author}</span>
-      {book.rating && <Stars rating={book.rating} />}
+      {book.rating != null && <Stars rating={Number(book.rating)} />}
       {book.recommended && (
         <>
           <span className="badge">✳ Recommended</span>

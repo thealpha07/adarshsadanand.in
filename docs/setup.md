@@ -30,6 +30,7 @@ In Supabase: **SQL Editor → New query**. Paste and run each file, in this orde
 4. `supabase/seed.sql`
 5. `supabase/migrations/0004_learning.sql` (the homepage's "What I'm learning"; it adds Node.js and Risk management as starting topics)
 6. `supabase/migrations/0005_book_covers.sql` (a public bucket for book covers you upload in the vault)
+7. `supabase/migrations/0006_half_star_ratings.sql` (book ratings in half steps, 0.5 to 5)
 
 Each should end with "Success. No rows returned".
 

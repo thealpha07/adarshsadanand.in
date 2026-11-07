@@ -49,7 +49,7 @@ The UI never decides privacy. If a page has a bug, the database still refuses.
 | `vault_files` | Name, storage path, size, type of each vault file | Never public |
 | `admins` | User ids allowed to write | Never readable through the API |
 
-Constraints live in the schema: slug format, rating 1–5, shelf and status enums, a 50 MB file cap,
+Constraints live in the schema: slug format, rating 0.5–5 in half steps, shelf and status enums, a 50 MB file cap,
 and "published needs a date".
 
 ## Low-level design: code
