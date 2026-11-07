@@ -1,5 +1,5 @@
 import { supabase } from "./client";
-import type { Anecdote, Book, Learning, Person, Post } from "./types";
+import type { Anecdote, Book, Genre, Learning, Person, Post } from "./types";
 
 /**
  * Read queries for the public sites. They read from *_public views, which
@@ -24,6 +24,11 @@ export async function listBooks(): Promise<Book[]> {
   return unwrap(
     await supabase.from("books_public").select("*").order("finished_on", { ascending: false, nullsFirst: true }).order("created_at", { ascending: false }),
   );
+}
+
+/** The genre list, in display order. Public: visitors need the names for the Library's filter. */
+export async function listGenres(): Promise<Genre[]> {
+  return unwrap(await supabase.from("genres").select("*").order("sort").order("name"));
 }
 
 export async function listPeople(): Promise<Person[]> {

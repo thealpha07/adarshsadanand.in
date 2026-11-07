@@ -4,3 +4,4 @@ export * from "./queries";
 export { useAsync, type AsyncState } from "./useAsync";
 export { formatDate, formatBytes, formatMonth, learningStageLabel } from "./format";
 export { renderMarkdown } from "./markdown";
+export * from "./catalogue";
