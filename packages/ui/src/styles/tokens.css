@@ -28,6 +28,7 @@
   --slate: #3f5a6b;         /* Vault */
   --amber: #8a5300;         /* CCI project, 6.3:1 on white; #e0a84a on dark */
   --danger: #a3271f;
+  --live: #1f8a4c;          /* "in progress" dot (Reading now), 4:1 on ground and white; always next to a word */
 
   /* Type */
   --font-display: "Archivo Variable", system-ui, sans-serif;

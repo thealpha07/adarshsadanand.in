@@ -40,7 +40,7 @@ function BookList() {
               <Link to={b.id} className="edit-row">
                 <span className="grot" style={{ fontSize: 20, lineHeight: "23px" }}>{b.title}</span>
                 <span className="small body-2">{b.author}</span>
-                <span className="status">{shelfLabel[b.shelf]}</span>
+                <span className={`status${b.shelf === "reading" ? " live" : ""}`}>{shelfLabel[b.shelf]}</span>
               </Link>
             </li>
           ))}
