@@ -1,5 +1,5 @@
 import { SiteHeader, contact, siteUrl } from "@site/ui";
-import { listBooks, listLearning, listPeople, listPosts, formatDate, formatMonth, learningStageLabel, useAsync } from "@site/data";
+import { byline, listBooks, listLearning, listPeople, listPosts, formatDate, formatMonth, learningStageLabel, useAsync } from "@site/data";
 import { about, hero, hobbies, learning, projects, whatIDo } from "./content";
 import "./home.css";
 
@@ -285,8 +285,8 @@ function Lately() {
             {!data?.reading.length
               ? "What I'm reading"
               : data.reading.length === 1
-                ? data.reading[0].author
-                : `${data.reading[0].author} · +${data.reading.length - 1} more`}
+                ? byline(data.reading[0].credits)
+                : `${byline(data.reading[0].credits)} · +${data.reading.length - 1} more`}
           </span>
         </a>
         <a className="card" href={data?.person ? siteUrl("people", `/${data.person.slug}`) : siteUrl("people")}>

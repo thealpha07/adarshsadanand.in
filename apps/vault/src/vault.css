@@ -87,3 +87,32 @@ td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: m
 .order-row { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
 .order-row .edit-row { flex: 1; min-width: 0; border-bottom: 0; }
 .order-buttons { display: flex; gap: 6px; flex: none; }
+
+/* Book editor sections (ADR 0012): grouped the way you fill them in, each with a visible heading. */
+.editor-section { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 24px 0 0; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.editor-section legend { float: left; width: 100%; padding: 0; font: 700 13px/16px var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.editor-section legend + * { clear: both; }
+.row-8 { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Credits: name, role, move up, remove, one row each. */
+.credit-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.credit-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px auto auto; gap: 8px; align-items: center; }
+.credit-row input, .credit-row select {
+  min-height: var(--tap-min); padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 16px;
+}
+@media (max-width: 560px) { .credit-row { grid-template-columns: minmax(0, 1fr) 120px; } }
+
+/* Genres: checkboxes styled as chips; the real checkbox stays for keyboards and screen readers. */
+.genre-group { display: flex; flex-direction: column; gap: 8px; }
+.genre-group-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.genre-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.genre-chip { position: relative; display: inline-flex; }
+.genre-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.genre-chip span {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: 1px solid var(--line-strong);
+  border-radius: 999px; background: var(--surface); font-size: 15px; cursor: pointer;
+}
+.genre-chip input:checked + span { background: var(--ink); border-color: var(--ink); color: #fff; }
+.genre-chip input:checked + span::before { content: "✓"; margin-right: 6px; }
+.genre-chip input:focus-visible + span { outline: 2px solid var(--cobalt); outline-offset: 3px; }

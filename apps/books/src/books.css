@@ -17,7 +17,18 @@
 /* Green dot after a word, meaning "in progress": Reading ●. Always beside text, never on its own. */
 .live-label { display: inline-flex; align-items: center; }
 .live-label::after { content: ""; width: 7px; height: 7px; margin-left: 7px; border-radius: 999px; background: var(--live); flex: none; }
-.book-shelf { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+/* The line above a card's title: shelf, format, volumes, series. */
+.book-meta { display: inline-flex; flex-wrap: wrap; align-items: center; row-gap: 2px; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.book-meta-dot { padding: 0 6px; } /* flex drops plain spaces, so the dot carries its own */
+.credit-notes { font-style: italic; }
+.one-liner { margin: 2px 0 0; color: var(--body-2); line-height: 21px; }
+
+/* Genre and format dropdowns: their own row under the tabs and search. */
+.filters { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 10px; }
+.filter select {
+  min-height: var(--tap-min); padding: 0 36px 0 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; max-width: 100%;
+}
 .shelves { display: flex; flex-wrap: wrap; gap: 10px; }
 .shelf {
   display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap-min); padding: 0 18px;
