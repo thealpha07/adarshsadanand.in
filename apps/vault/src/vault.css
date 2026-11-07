@@ -64,7 +64,9 @@ td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: m
 
 .editor { max-width: 760px; display: flex; flex-direction: column; gap: 20px; }
 .editor-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; align-items: start; }
-.cover-preview { width: 140px; aspect-ratio: 2 / 3; object-fit: cover; justify-self: start; }
+/* Same white mat as the public Library, so the preview shows what visitors will see: the whole cover, never cropped. */
+.cover-preview { width: 156px; aspect-ratio: 2 / 3; object-fit: contain; justify-self: start; background: #fff; padding: 8px; border: 1px solid var(--line); }
+.saved-text { color: #2e6b3f; font-weight: 700; }
 .label-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mono-area { font: 15px/24px var(--font-mono) !important; }
 .preview { min-height: 300px; padding: 20px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font-size: 19px; line-height: 31px; }
