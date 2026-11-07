@@ -43,13 +43,15 @@ The UI never decides privacy. If a page has a bug, the database still refuses.
 | Table | Purpose | Public through |
 | --- | --- | --- |
 | `posts` | Thoughts: title, subtitle, slug, Markdown body, tags, draft/published | `posts_public`: published and dated in the past |
-| `books` | Library: shelf, rating, recommendation, note, dates | `books_public`: note hidden unless `note_public` |
+| `books` | Library: format, fiction or non-fiction, shelf, rating, one-liner, recommendation, note, translation, series, dates | `books_public`: note hidden unless `note_public`; credits and genre keys folded in |
+| `book_credits` | Who made each book: name, role (author, story, art, translator, editor), order | Through `books_public` only |
+| `genres`, `book_genres` | The genre list and which books have which | `genres` readable by everyone (for the filter) |
 | `people` | Alias, context, symbol, impression, visibility, private initials | `people_public`: public rows, no initials |
 | `anecdotes` | Dated stories, one person to many anecdotes | `anecdotes_public`: public anecdote of a public person |
 | `vault_files` | Name, storage path, size, type of each vault file | Never public |
 | `admins` | User ids allowed to write | Never readable through the API |
 
-Constraints live in the schema: slug format, rating 0.5–5 in half steps, shelf and status enums, a 50 MB file cap,
+Constraints live in the schema: slug format, rating 0.5–5 in half steps, one-liner up to 160 characters, volumes read ≤ total, genres from the list, shelf and status enums, a 50 MB file cap,
 and "published needs a date".
 
 ## Low-level design: code
