@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { PageHead, TableBox, fmtDateTime, usePageTitle } from "../components/ui";
 import { CYCLE, ORG, catalog } from "../data/catalog";
 import { affectsScore, responseLabel, visibleQuestions } from "../domain/questions";

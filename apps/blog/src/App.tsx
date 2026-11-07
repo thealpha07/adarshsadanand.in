@@ -1,4 +1,4 @@
-import { BrowserRouter, Link, Route, Routes, useParams } from "react-router-dom";
+import { BrowserRouter, Link, Route, Routes, useParams } from "react-router";
 import { useEffect, type ReactNode } from "react";
 import { Empty, Failed, Loading, PageBand, SiteFooter, SiteHeader } from "@site/ui";
 import { blogImageUrl, formatDate, getPost, listPosts, renderMarkdown, useAsync, type Post } from "@site/data";

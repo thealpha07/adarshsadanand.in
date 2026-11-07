@@ -1,5 +1,8 @@
+# Security headers for every path. CSP rules and the reasons for each: docs/adr/0010-self-hosted-fonts-and-csp.md
+# The CCI demo keeps its data in the browser (ADR 0009) and calls no API, so it gets the tightest policy.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; img-src 'self' data:; connect-src 'self'

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { CYCLE, ORG } from "../data/catalog";
 import type { Role } from "../domain/types";
 import { ROLE_LABEL } from "../domain/workflow";

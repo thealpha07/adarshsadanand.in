@@ -3,13 +3,14 @@
 ## High-level design
 
 ```
-                ┌──────────────── Cloudflare ────────────────┐
-Visitor ──DNS──►│  adarshsadanand.in        → Pages: home    │
-                │  blog.adarshsadanand.in   → Pages: blog    │──static files (HTML, JS, CSS, images)
-                │  books.…                  → Pages: books   │
-                │  characters.…             → Pages: people  │
-Me ────────────►│  files.…                  → Pages: vault   │
-                └────────────────────────────────────────────┘
+                ┌──────────────── Cloudflare ─────────────────┐
+Visitor ──DNS──►│  adarshsadanand.in        → Worker: as-home   │
+                │  blog.adarshsadanand.in   → Worker: as-blog   │──static files (HTML, JS, CSS, fonts, images)
+                │  books.…                  → Worker: as-books  │  + security headers from each _headers file
+                │  characters.…             → Worker: as-people │
+                │  cci.…                    → Worker: as-cci    │  (no backend: demo data in localStorage, ADR 0009)
+Me ────────────►│  files.…                  → Worker: as-vault  │
+                └─────────────────────────────────────────────┘
                          │ browser calls Supabase directly (HTTPS + publishable key)
                          ▼
                 ┌──────────── Supabase (Mumbai) ─────────────┐
@@ -17,11 +18,12 @@ Me ────────────►│  files.…                  → Pa
                 │ Auth: one admin, password + TOTP (aal2)    │
                 │ Storage: blog-images (public), vault (private)
                 └────────────────────────────────────────────┘
-GitHub ── push ──► CI (typecheck, build) and Cloudflare Pages (deploy)
+GitHub ── push ──► CI (typecheck, build) and Workers Builds (wrangler deploy, ADR 0007)
 GitHub Actions cron ──► Supabase every 3 days (keeps the free project awake)
 ```
 
 **Pattern:** JAMstack. Static frontends on a CDN, and a managed backend called straight from the browser.
+The Workers hold assets only (no Worker script), so Cloudflare serves files and headers and runs none of our code.
 *Analogy:* a shop window (CDN) in front of a bank vault (Supabase). The window never holds anything valuable.
 
 ## Trust boundaries
@@ -32,6 +34,7 @@ GitHub Actions cron ──► Supabase every 3 days (keeps the free project awak
 | Signed in, no 2FA (`aal1`) | Nothing | `is_admin()` requires `aal = 'aal2'` |
 | Admin with 2FA (`aal2`) | Read and write everything | RLS policies `using (is_admin())` |
 | Vault files | Downloads through signed URLs, valid 60 s | Private bucket + storage policies |
+| Any page's JavaScript | Run only our own bundled scripts; talk only to Supabase | Content-Security-Policy in each `_headers` (ADR 0010) |
 
 The UI never decides privacy. If a page has a bug, the database still refuses.
 
@@ -54,10 +57,12 @@ and "published needs a date".
 - `packages/ui` is presentation only: tokens, base CSS, header and menu, page band, footer, and the loading/empty/error states.
 - `packages/data` is data only: the Supabase client, row types, read queries against public views, `useAsync`, and markdown rendering (sanitised).
 - Each app is a thin composition of the two. The vault adds write paths and auth.
+- Routing is React Router 7 in declarative mode (`<BrowserRouter>`, `<Routes>`), imported from `react-router` (ADR 0011).
+- Fonts are npm packages (`@fontsource…`) imported in `packages/ui/src/styles/base.css`, so Vite bundles them with each site.
 - Content that changes rarely (homepage words, projects) is code (`content.ts`). Content that changes often is data (Supabase).
 
 ## Known trade-offs
 
-- **Bundle size**: around 130 KB gzipped per app, most of it `supabase-js`. The public sites could use plain `fetch` against the REST API to cut this to around 50 KB. Do it if load time ever matters.
+- **Bundle size**: around 130–145 KB of JavaScript gzipped per data-backed app (the CCI demo, which has no Supabase client, is about 80 KB), most of it `supabase-js`. The public sites could use plain `fetch` against the REST API to cut this to around 50 KB. Do it if load time ever matters.
 - **SEO**: pages render in the browser, so search engines see content only after JavaScript runs. Fine for a personal site; pre-rendering the blog is the upgrade path.
 - **Free tier**: about 1 GB storage and 5 GB transfer a month. The vault shows usage against 1 GB.

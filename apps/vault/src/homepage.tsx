@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Link, Route, Routes, useNavigate, useParams } from "react-router";
 import { Empty, Failed, Loading } from "@site/ui";
 import { learningStageLabel, supabase, useAsync, type Learning, type LearningStage } from "@site/data";
 import { Check, ConfirmButton, FormActions, Select, Text } from "./fields";

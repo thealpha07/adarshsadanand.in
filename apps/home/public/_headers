@@ -1,5 +1,8 @@
+# Security headers for every path. CSP rules and the reasons for each: docs/adr/0010-self-hosted-fonts-and-csp.md
+# If the Supabase project ever changes, update its address in connect-src here.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; img-src 'self' data: https:; connect-src 'self' https://yccrnabjqjwyqwiwklup.supabase.co

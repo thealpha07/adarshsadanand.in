@@ -1,5 +1,6 @@
-# Checks every push and pull request: types, tests, then a production build of all the apps.
-# Cloudflare Pages does the deploying; this job makes sure nothing broken reaches it.
+# Checks every push and pull request: types, tests, a production build of all the apps, and a
+# scan of runtime dependencies for known vulnerabilities.
+# Cloudflare Workers Builds does the deploying (ADR 0007); this job makes sure nothing broken reaches it.
 name: CI
 
 on:
@@ -20,3 +21,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # Fails only on high or critical advisories in code that ships to browsers.
+      # Lower ones still print here, so they're visible without blocking a deploy.
+      - run: npm audit --omit=dev --audit-level=high

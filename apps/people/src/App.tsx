@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Link, Route, Routes, useParams } from "react-router-dom";
+import { BrowserRouter, Link, Route, Routes, useParams } from "react-router";
 import { Empty, Failed, Loading, PageBand, SiteFooter, siteUrl } from "@site/ui";
 import { getPerson, listPeople, useAsync, type Person } from "@site/data";
 import "./people.css";

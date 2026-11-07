@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, NavLink, Navigate, Route, Routes } from "react-router";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@site/data";
 import { AuthGate } from "./auth";
