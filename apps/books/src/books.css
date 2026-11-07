@@ -1,4 +1,23 @@
-.shelf-bar { border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+.shelf-bar { border-bottom: 1px solid var(--line); padding-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+
+/* Search sits beside the shelf tabs on wide screens and drops below them on narrow ones. */
+.search { position: relative; flex: 1 1 280px; max-width: 360px; display: flex; align-items: center; }
+.search input {
+  width: 100%; min-height: var(--tap-min); padding: 0 76px 0 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; /* 16px stops iOS zooming in */
+}
+.search input::-webkit-search-cancel-button { display: none; } /* our own Clear button replaces it */
+.search-clear {
+  position: absolute; right: 6px; min-height: 32px; padding: 0 10px; border: 0; background: transparent; color: var(--teal);
+  font: 700 14px/20px var(--font-body, inherit); cursor: pointer;
+}
+.result-count { margin: 0 0 24px; font-size: 13px; }
+.link-button { border: 0; padding: 0; background: none; color: var(--teal); font: inherit; text-decoration: underline; cursor: pointer; }
+
+/* Green dot after a word, meaning "in progress": Reading ●. Always beside text, never on its own. */
+.live-label { display: inline-flex; align-items: center; }
+.live-label::after { content: ""; width: 7px; height: 7px; margin-left: 7px; border-radius: 999px; background: var(--live); flex: none; }
+.book-shelf { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .shelves { display: flex; flex-wrap: wrap; gap: 10px; }
 .shelf {
   display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap-min); padding: 0 18px;
@@ -27,6 +46,15 @@
 
 .now-reading { width: 300px; max-width: 100%; background: #fff; color: var(--ink); padding: 10px; display: flex; gap: 14px; box-shadow: var(--shadow-float); }
 .now-cover { width: 96px; flex: none; padding: 0; box-shadow: none; } /* already on a white card */
+.now-heading { color: var(--teal); font-weight: 700; }
+
+/* Two or three books at once: one card, a compact row per book. */
+.now-reading-many { flex-direction: column; gap: 12px; padding: 14px; }
+.now-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.now-row { display: flex; gap: 12px; align-items: center; }
+.now-cover-small { width: 44px; flex: none; padding: 0; box-shadow: none; }
+.now-title { font-size: 16px; line-height: 19px; }
+.now-more { color: var(--teal); font-weight: 700; }
 
 /* Half-star ratings: the filled copy of each star is cropped to 0 %, 50 % or 100 % of its width. */
 .stars { display: inline-flex; align-items: center; gap: 2px; color: var(--ink); }

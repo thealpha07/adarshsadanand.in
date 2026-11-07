@@ -3,22 +3,64 @@ import { Empty, Failed, Loading, PageBand, SiteFooter } from "@site/ui";
 import { listBooks, useAsync, type Book, type Shelf } from "@site/data";
 import "./books.css";
 
-const shelves: { key: Shelf; label: string }[] = [
-  { key: "want", label: "Want to read" },
-  { key: "reading", label: "Reading" },
-  { key: "read", label: "Read" },
+type View = Shelf | "all";
+
+const shelfLabel: Record<Shelf, string> = { reading: "Reading", read: "Read", want: "Want to read" };
+// "All" lists the present first, then the past, then the future.
+const views: { key: View; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "reading", label: shelfLabel.reading },
+  { key: "read", label: shelfLabel.read },
+  { key: "want", label: shelfLabel.want },
 ];
+const shelfOrder: Record<Shelf, number> = { reading: 0, read: 1, want: 2 };
+
+/** Case- and accent-insensitive, so "dostoevsky" finds "Dostoevsky" and "ogai" finds "Ōgai". */
+const fold = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+/**
+ * Shelf and search live in the address (?shelf=read&q=murakami), so a search can be shared or bookmarked.
+ * replaceState, not pushState: typing shouldn't fill the Back button with one entry per letter.
+ */
+function readUrl(): { view: View; q: string } {
+  const p = new URLSearchParams(window.location.search);
+  const shelf = p.get("shelf");
+  return { view: views.some((v) => v.key === shelf) ? (shelf as View) : "all", q: p.get("q") ?? "" };
+}
+function writeUrl(view: View, q: string) {
+  const p = new URLSearchParams();
+  if (view !== "all") p.set("shelf", view);
+  if (q.trim()) p.set("q", q.trim());
+  const search = p.toString();
+  window.history.replaceState(null, "", search ? `?${search}` : window.location.pathname);
+}
 
 export function App() {
   const { state } = useAsync(listBooks);
   const books = state.status === "ready" ? state.data : [];
-  const current = books.find((b) => b.shelf === "reading");
+  const reading = books.filter((b) => b.shelf === "reading");
 
-  // Default shelf: "Read" if anything is there, otherwise the first shelf with books.
-  const counts = useMemo(() => Object.fromEntries(shelves.map((s) => [s.key, books.filter((b) => b.shelf === s.key).length])) as Record<Shelf, number>, [books]);
-  const [chosen, setChosen] = useState<Shelf | null>(null);
-  const shelf: Shelf = chosen ?? (counts.read ? "read" : counts.reading ? "reading" : "want");
-  const visible = books.filter((b) => b.shelf === shelf);
+  const [view, setViewState] = useState<View>(() => readUrl().view);
+  const [query, setQueryState] = useState(() => readUrl().q);
+  const setView = (v: View) => { setViewState(v); writeUrl(v, query); };
+  const setQuery = (q: string) => { setQueryState(q); writeUrl(view, q); };
+
+  // Search first, then count per shelf, so each tab shows how many matches it holds.
+  const matches = useMemo(() => {
+    const q = fold(query.trim());
+    return q ? books.filter((b) => fold(b.title).includes(q) || fold(b.author).includes(q)) : books;
+  }, [books, query]);
+  const counts = useMemo(() => {
+    const c: Record<View, number> = { all: matches.length, reading: 0, read: 0, want: 0 };
+    for (const b of matches) c[b.shelf]++;
+    return c;
+  }, [matches]);
+  const visible = view === "all"
+    ? [...matches].sort((a, b) => shelfOrder[a.shelf] - shelfOrder[b.shelf]) // stable: keeps the newest-first order within a shelf
+    : matches.filter((b) => b.shelf === view);
+
+  const searching = query.trim() !== "";
+  const viewLabel = views.find((v) => v.key === view)!.label;
 
   return (
     <div style={{ ["--site" as string]: "var(--teal)", ["--site-light" as string]: "#7fd0d6" }}>
@@ -28,32 +70,50 @@ export function App() {
         title="Library"
         ghost="Shelves"
         intro="Literature, manga, light novels and mythology. What I'm reading, what I've read, and what's next, with a note on each."
-        actions={current && <NowReading book={current} />}
+        actions={reading.length > 0 && <NowReading books={reading} />}
       />
       <main id="main" className="wrap" style={{ paddingTop: 56, paddingBottom: 96, display: "flex", flexDirection: "column", gap: 40 }}>
         <div className="shelf-bar">
           <div role="group" aria-label="Shelves" className="shelves">
-            {shelves.map((s) => (
-              <button
-                key={s.key}
-                type="button"
-                aria-pressed={shelf === s.key}
-                className="shelf"
-                onClick={() => setChosen(s.key)}
-              >
-                {s.label} <span className="mono">{counts[s.key]}</span>
+            {views.map((v) => (
+              <button key={v.key} type="button" aria-pressed={view === v.key} className="shelf" onClick={() => setView(v.key)}>
+                <span className={v.key === "reading" ? "live-label" : undefined}>{v.label}</span> <span className="mono">{counts[v.key]}</span>
               </button>
             ))}
           </div>
+          <div className="search" role="search">
+            <label htmlFor="book-search" className="visually-hidden">Search by title or author</label>
+            <input
+              id="book-search"
+              type="search"
+              placeholder="Search by title or author"
+              autoComplete="off"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Escape" && setQuery("")}
+            />
+            {searching && <button type="button" className="search-clear" onClick={() => setQuery("")}>Clear</button>}
+          </div>
         </div>
 
-        <section aria-label={`${shelves.find((x) => x.key === shelf)?.label} shelf`} aria-live="polite">
+        <section aria-label={`${viewLabel}${searching ? `, search results for ${query.trim()}` : ""}`}>
+          {/* One short sentence for screen readers and sighted readers alike, updated as you type. */}
+          {state.status === "ready" && (
+            <p className="mono muted result-count" role="status">
+              {searching ? `${visible.length} ${visible.length === 1 ? "book matches" : "books match"} “${query.trim()}”` : `${visible.length} ${visible.length === 1 ? "book" : "books"}`}
+              {searching && view !== "all" && counts.all > visible.length && (
+                <> · <button type="button" className="link-button" onClick={() => setView("all")}>{counts.all} on all shelves</button></>
+              )}
+            </p>
+          )}
           {state.status === "loading" && <Loading label="Loading the shelves" />}
           {state.status === "error" && <Failed message={state.message} />}
-          {state.status === "ready" && visible.length === 0 && <Empty>Nothing on this shelf yet.</Empty>}
+          {state.status === "ready" && visible.length === 0 && (
+            <Empty>{searching ? "No books match that. Try part of a title or an author's surname." : "Nothing on this shelf yet."}</Empty>
+          )}
           {visible.length > 0 && (
             <ul className="book-grid">
-              {visible.map((b) => <BookCard key={b.id} book={b} />)}
+              {visible.map((b) => <BookCard key={b.id} book={b} showShelf={view === "all"} />)}
             </ul>
           )}
         </section>
@@ -81,15 +141,44 @@ function Cover({ book, className }: { book: Book; className: string }) {
   );
 }
 
-function NowReading({ book }: { book: Book }) {
-  return (
-    <div className="now-reading">
-      <Cover book={book} className="now-cover" />
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "4px 0" }}>
-        <span className="mono" style={{ color: "var(--teal)", fontWeight: 700 }}>✳ Reading now</span>
-        <span className="grot" style={{ fontSize: 20, lineHeight: "22px" }}>{book.title}</span>
-        <span className="small body-2">{book.author}</span>
+/**
+ * One book: the large card as before. Two or three: one card with a compact row per book, so the hero
+ * band doesn't grow three cards tall. More than three: the first three, and a count that opens the shelf.
+ */
+const NOW_READING_MAX = 3;
+function NowReading({ books }: { books: Book[] }) {
+  const heading = <span className="mono now-heading"><span className="live-label">Reading now</span>{books.length > 1 && ` · ${books.length}`}</span>;
+  if (books.length === 1) {
+    const [book] = books;
+    return (
+      <div className="now-reading">
+        <Cover book={book} className="now-cover" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "4px 0" }}>
+          {heading}
+          <span className="grot" style={{ fontSize: 20, lineHeight: "22px" }}>{book.title}</span>
+          <span className="small body-2">{book.author}</span>
+        </div>
       </div>
+    );
+  }
+  const shown = books.slice(0, NOW_READING_MAX);
+  return (
+    <div className="now-reading now-reading-many">
+      {heading}
+      <ul className="now-list">
+        {shown.map((b) => (
+          <li key={b.id} className="now-row">
+            <Cover book={b} className="now-cover-small" />
+            <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+              <span className="grot now-title">{b.title}</span>
+              <span className="small body-2">{b.author}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {books.length > NOW_READING_MAX && (
+        <a className="small now-more" href="?shelf=reading">and {books.length - NOW_READING_MAX} more</a>
+      )}
     </div>
   );
 }
@@ -122,10 +211,12 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function BookCard({ book }: { book: Book }) {
+function BookCard({ book, showShelf }: { book: Book; showShelf: boolean }) {
   return (
     <li className="book">
       <Cover book={book} className="book-cover" />
+      {/* In "All", say which shelf each book is on; on a single shelf that would repeat the tab. */}
+      {showShelf && <span className={`mono book-shelf${book.shelf === "reading" ? " live-label" : ""}`}>{shelfLabel[book.shelf]}</span>}
       <span className="grot" style={{ fontSize: 18, lineHeight: "21px" }}>{book.title}</span>
       <span className="small body-2">{book.author}</span>
       {book.rating != null && <Stars rating={Number(book.rating)} />}
