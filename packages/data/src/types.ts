@@ -18,22 +18,49 @@ export interface Post {
 }
 
 export type Shelf = "want" | "reading" | "read";
+export type BookFormat = "book" | "manga" | "light_novel" | "graphic_novel";
+export type BookCategory = "fiction" | "nonfiction";
+export type CreditRole = "author" | "story" | "art" | "translator" | "editor";
+export interface Credit {
+  name: string;
+  role: CreditRole;
+}
+export interface Genre {
+  slug: string;
+  name: string;
+  kind: BookCategory | "any";
+  sort: number;
+}
+
+/** A book as books_public returns it: credits and genre keys come folded in (migration 0007). */
 export interface Book {
   id: string;
   title: string;
-  author: string;
+  original_title: string | null;
+  format: BookFormat;
+  category: BookCategory | null;
   isbn: string | null;
   cover_url: string | null;
   shelf: Shelf;
   rating: number | null;
   recommended: boolean;
-  recommend_reason: string | null;
+  /** One line about the book, shown on its card. For any book, not only recommended ones. */
+  one_liner: string | null;
   /** Null on the public view unless the note is marked public. */
   note: string | null;
   note_public?: boolean;
+  translated_from: string | null;
+  series: string | null;
+  series_number: number | null;
+  volumes_read: number | null;
+  volumes_total: number | null;
   started_on: string | null;
   finished_on: string | null;
   created_at: string;
+  /** In order: authors (or story and art) first, then translators and editors. */
+  credits: Credit[];
+  /** Genre keys, e.g. "literary-fiction"; names come from listGenres(). */
+  genres: string[];
 }
 
 export type Visibility = "public" | "private";
