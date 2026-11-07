@@ -40,7 +40,7 @@ function BookList() {
               <Link to={b.id} className="edit-row">
                 <span className="grot" style={{ fontSize: 20, lineHeight: "23px" }}>{b.title}</span>
                 <span className="small body-2">{b.author}</span>
-                <span className="status">{shelfLabel[b.shelf]}</span>
+                <span className={`status${b.shelf === "reading" ? " live" : ""}`}>{shelfLabel[b.shelf]}</span>
               </Link>
             </li>
           ))}
@@ -63,6 +63,15 @@ const empty = {
 const coverFromIsbn = (isbn: string) => (isbn ? `https://covers.openlibrary.org/b/isbn/${isbn.replace(/[^0-9X]/gi, "")}-L.jpg?default=false` : "");
 const COVERS = "book-covers";
 
+/** 5, 4.5 … 0.5, matching the database rule in 0006_half_star_ratings.sql. Stars show the value at a glance. */
+const ratingOptions = [
+  { value: "", label: "Not rated" },
+  ...Array.from({ length: 10 }, (_, i) => (10 - i) / 2).map((n) => ({
+    value: String(n),
+    label: `${"★".repeat(Math.floor(n))}${n % 1 ? "½" : ""}  ${n} of 5`,
+  })),
+];
+
 function BookEditor() {
   const { id = "new" } = useParams();
   const navigate = useNavigate();
@@ -71,6 +80,8 @@ function BookEditor() {
   const [loaded, setLoaded] = useState(isNew);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     if (isNew) return;
@@ -78,7 +89,8 @@ function BookEditor() {
       if (error) return setError(error.message);
       setForm({
         ...empty, ...Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v ?? ""])),
-        rating: data.rating ? String(data.rating) : "", recommended: data.recommended, note_public: data.note_public,
+        // Number() first: "4.0" and 4 must both match the option value "4".
+        rating: data.rating != null ? String(Number(data.rating)) : "", recommended: data.recommended, note_public: data.note_public,
       } as typeof empty);
       setLoaded(true);
     });
@@ -88,7 +100,9 @@ function BookEditor() {
 
   async function save(e: FormEvent) {
     e.preventDefault();
+    if (saving) return; // a double-click would otherwise add the same new book twice
     setError(null);
+    setSaving(true);
     const row = {
       title: form.title.trim(), author: form.author.trim(), isbn: form.isbn.trim() || null,
       cover_url: form.cover_url.trim() || coverFromIsbn(form.isbn.trim()) || null,
@@ -97,10 +111,20 @@ function BookEditor() {
       note: form.note.trim() || null, note_public: form.note_public,
       started_on: form.started_on || null, finished_on: form.finished_on || null,
     };
-    const res = isNew ? await supabase.from("books").insert(row).select("id").single() : await supabase.from("books").update(row).eq("id", id).select("id").single();
+    let res;
+    try {
+      res = isNew ? await supabase.from("books").insert(row).select("id").single() : await supabase.from("books").update(row).eq("id", id).select("id").single();
+    } catch (err) {
+      return setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
     if (res.error) return setError(res.error.message);
+    // Show the cover the database now holds (the ISBN fallback may have filled it in).
+    // Use setForm, not set(): set() marks the form as edited, which hid "Saved" straight away.
+    setForm((f) => ({ ...f, cover_url: row.cover_url ?? "" }));
     setSaved(true);
-    set("cover_url", row.cover_url ?? "");
+    setSavedAt(new Date());
     if (isNew) navigate(`../${res.data.id}`, { replace: true });
   }
 
@@ -150,7 +174,7 @@ function BookEditor() {
         {cover && <img src={cover} alt="Cover preview" className="cover-preview" />}
       </div>
       <Select id="shelf" label="Shelf" value={form.shelf} onChange={(v) => set("shelf", v)} options={(["want", "reading", "read"] as Shelf[]).map((s) => ({ value: s, label: shelfLabel[s] }))} />
-      <Select id="rating" label="Rating" value={form.rating} onChange={(v) => set("rating", v)} options={[{ value: "", label: "Not rated" }, ...[5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: `${n} of 5` }))]} />
+      <Select id="rating" label="Rating" value={form.rating} onChange={(v) => set("rating", v)} options={ratingOptions} />
       <div className="editor-columns">
         <Text id="started" label="Started" type="date" value={form.started_on} onChange={(v) => set("started_on", v)} />
         <Text id="finished" label="Finished" type="date" value={form.finished_on} onChange={(v) => set("finished_on", v)} />
@@ -159,8 +183,8 @@ function BookEditor() {
       {form.recommended && <Text id="reason" label="Why, in one line" value={form.recommend_reason} onChange={(v) => set("recommend_reason", v)} />}
       <Area id="note" label="Note" value={form.note} onChange={(v) => set("note", v)} />
       <Check id="notepub" label="Show my note publicly" hint="(off: only you see it)" checked={form.note_public} onChange={(v) => set("note_public", v)} />
-      <FormActions error={error} saved={saved}>
-        <button className="btn btn-dark" type="submit" disabled={!form.title.trim() || !form.author.trim()}>Save</button>
+      <FormActions error={error} saved={saved} savedAt={savedAt}>
+        <button className="btn btn-dark" type="submit" disabled={saving || uploading || !form.title.trim() || !form.author.trim()}>{saving ? "Saving…" : "Save"}</button>
         {!isNew && <ConfirmButton label="Delete" confirmLabel="Delete this book?" onConfirm={remove} />}
       </FormActions>
     </form>

@@ -256,7 +256,7 @@ function Lately() {
     const [posts, books, people] = await Promise.all([listPosts(), listBooks(), listPeople()]);
     return {
       post: posts[0] ?? null,
-      book: books.find((b) => b.shelf === "reading") ?? null,
+      reading: books.filter((b) => b.shelf === "reading"), // several at once is normal
       person: [...people].sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null,
     };
   });
@@ -280,8 +280,14 @@ function Lately() {
         </a>
         <a className="card" href={siteUrl("library")}>
           <span className="tag">Currently reading</span>
-          <span className="grot tile-title">{data?.book?.title ?? "The library"}</span>
-          <span className="small muted" style={{ marginTop: "auto" }}>{data?.book?.author ?? "What I'm reading"}</span>
+          <span className="grot tile-title">{data?.reading[0]?.title ?? "The library"}</span>
+          <span className="small muted" style={{ marginTop: "auto" }}>
+            {!data?.reading.length
+              ? "What I'm reading"
+              : data.reading.length === 1
+                ? data.reading[0].author
+                : `${data.reading[0].author} · +${data.reading.length - 1} more`}
+          </span>
         </a>
         <a className="card" href={data?.person ? siteUrl("people", `/${data.person.slug}`) : siteUrl("people")}>
           <span className="tag">Newest in People</span>

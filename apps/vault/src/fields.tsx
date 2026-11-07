@@ -61,13 +61,18 @@ export function ConfirmButton({ label, confirmLabel, onConfirm }: { label: strin
   );
 }
 
-export function FormActions({ children, error, saved }: { children: ReactNode; error: string | null; saved: boolean }) {
+/**
+ * Save button row plus a status that screen readers announce.
+ * `savedAt` is optional: editors that pass it show the time, so a second save visibly changes something.
+ */
+export function FormActions({ children, error, saved, savedAt }: { children: ReactNode; error: string | null; saved: boolean; savedAt?: Date | null }) {
+  const time = savedAt?.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   return (
     <div className="form-actions">
       {children}
       <span aria-live="polite">
         {error && <span className="error-text">{error}</span>}
-        {saved && !error && <span className="small" style={{ color: "#2e6b3f" }}>✓ Saved</span>}
+        {saved && !error && <span className="small saved-text">✓ Saved{time && ` at ${time}`}</span>}
       </span>
     </div>
   );
