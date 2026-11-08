@@ -18,7 +18,7 @@ export const hero = {
 export const about = {
   heading: ["Meaningful", "work, growth, and recognition", "— beyond just a paycheck"] as const,
   bio:
-    "A postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three and a half years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but what I truly enjoy is spotting the pattern, gathering everything there is to know, and finding out why and how it works.",
+    "A postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three and a half years as a Product Engineer at Multifonds, formerly part of Temenos. I can program systems, but this is me: pattern recognition + amassing knowledge + finding out why and how.",
   resumeHref: "/Adarsh_Sadanand_Resume.pdf",
 };
 
