@@ -18,7 +18,7 @@ export const hero = {
 export const about = {
   heading: ["Meaningful", "work, growth, and recognition", "— beyond just a paycheck"] as const,
   bio:
-    "A postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three and a half years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but I truly enjoy programming complete systems.",
+    "A postgraduate student in Computer Science at Ramaiah Institute of Technology and, since August 2026, an intern at ArcherIRM, where I'm moving into governance, risk and compliance. Before that I spent over three and a half years as a Product Engineer at Multifonds, formerly part of Temenos. I can code, but what I truly enjoy is spotting the pattern, gathering everything there is to know, and finding out why and how it works.",
   resumeHref: "/Adarsh_Sadanand_Resume.pdf",
 };
 
@@ -50,20 +50,20 @@ export const whatIDo = {
   areas: [
     {
       title: "Product engineering",
-      desc: "Designing and tuning PL/SQL packages and stored procedures that move data reliably through a financial product. Fixing what breaks, and making it stay fixed.",
-      skills: ["SQL", "PL/SQL", "Oracle Forms & Reports", "DBMS"],
+      desc: "Designing new features while tuning legacy systems: fixing PL/SQL procedures and Java blocks to keep the product healthy and running. Building new reports and migrating tools to APEX, all while supporting the old infrastructure. Fixing what breaks, and making it stay fixed.",
+      skills: ["SQL", "PL/SQL", "RDBMS", "Oracle Forms & Reports", "Oracle APEX", "Jasper", "ADF", "Workflow Exception Manager", "Controls"],
       visual: "SELECT fund_id, nav\n  FROM valuations\n WHERE run_date = :today;\n\n-- tuned, tested, translated",
     },
     {
       title: "Internal tools & workflows",
-      desc: "Building tools and processes that remove repetitive work and make support transparent, from bug-logging dashboards to version-control standards.",
-      skills: ["Oracle APEX", "Python", "Git / Bitbucket", "Figma prototyping"],
-      visual: "REPORT  →  TRIAGE\n   ↓          ↓\n  LOG   ←    FIX\n\nteam efficiency +15–200%",
+      desc: "Building tools and processes that remove repetitive work and make support transparent, from bug-logging dashboards to version-control standards. Automating the steps that wait on a person, cutting the time work sits in a queue, and adding agentic AI and plugin support.",
+      skills: ["Python", "Git", "Bitbucket / GitLab", "Figma", "Excel macros"],
+      visual: "REPORT  →  TRIAGE\n   ↓          ↓\n  LOG   ←    FIX\n\nless waiting, fewer hand-offs",
     },
     {
       title: "Governance, risk & compliance",
-      desc: "Learning how organisations measure and manage risk, and building systems that make compliance clear instead of painful.",
-      skills: ["GRC", "Risk frameworks", "Compliance workflows", "MongoDB"],
+      desc: "Learning how organisations measure and manage risk, and building systems that make compliance and risk management clear instead of painful.",
+      skills: ["GRC", "Risk frameworks", "Compliance workflows", "Consultant"],
       visual: "RISK = LIKELIHOOD × IMPACT\n\ncontrols → evidence → audit",
     },
   ],

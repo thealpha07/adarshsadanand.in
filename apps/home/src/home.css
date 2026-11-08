@@ -64,6 +64,7 @@
 .h-section { font-size: clamp(40px, 5.6vw, 76px); line-height: 0.95; }
 .stack-14 { display: flex; flex-direction: column; gap: 14px; }
 .stack-16 { display: flex; flex-direction: column; gap: 16px; }
+.stack-24 { display: flex; flex-direction: column; gap: 24px; }
 .stack-32 { display: flex; flex-direction: column; gap: 32px; }
 .stack-48 { display: flex; flex-direction: column; gap: 48px; }
 .row-12 { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -103,10 +104,12 @@
 
 /* What I'm learning: a ruled list, so it reads as "in progress" rather than as finished cards. */
 .learning { list-style: none; margin: 0; padding: 0; }
-.learn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-content: start; gap: 12px 32px; padding: 28px 0; border-top: 1px solid var(--line); }
+/* Compact on purpose: it's a running list of four or so topics, not a headline section (smaller heading, tighter rows). */
+.learning-section .h-section { font-size: clamp(32px, 4vw, 56px); }
+.learn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-content: start; gap: 8px 32px; padding: 18px 0; border-top: 1px solid var(--line); }
 .learn:last-child { border-bottom: 1px solid var(--line); }
 .learn-head { grid-row: span 2; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.learn-topic { font-size: clamp(24px, 2.2vw, 32px); line-height: 1.05; overflow-wrap: break-word; max-width: 100%; }
+.learn-topic { font-size: clamp(20px, 1.8vw, 26px); line-height: 1.05; overflow-wrap: break-word; max-width: 100%; }
 .learn-stage { font: 500 12px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; }
 .learn-stage::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; background: var(--grey); }
 .stage-practising::before { background: var(--cobalt); }
