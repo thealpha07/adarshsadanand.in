@@ -49,6 +49,8 @@ export interface Book {
   /** Null on the public view unless the note is marked public. */
   note: string | null;
   note_public?: boolean;
+  /** Vault only: books_public returns public books only (0008), so visitors never see this field. */
+  visibility?: Visibility;
   translated_from: string | null;
   series: string | null;
   series_number: number | null;

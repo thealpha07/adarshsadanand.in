@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { contact, publicNav, siteUrl, type SiteKey } from "../sites";
+import { contact, features, publicNav, siteUrl, type SiteKey } from "../sites";
 import "./header.css";
 
 interface Props {
@@ -61,7 +61,7 @@ function MenuOverlay({ current, onClose }: { current: SiteKey; onClose: () => vo
 
   const items: { label: string; href: string; key?: SiteKey }[] = [
     { label: "Home", href: siteUrl("home"), key: "home" },
-    { label: "Work", href: siteUrl("home", "/#work") },
+    ...(features.projects ? [{ label: "Work", href: siteUrl("home", "/#work") }] : []),
     { label: "Thoughts", href: siteUrl("thoughts"), key: "thoughts" },
     { label: "Library", href: siteUrl("library"), key: "library" },
     { label: "People", href: siteUrl("people"), key: "people" },

@@ -32,6 +32,7 @@ In Supabase: **SQL Editor → New query**. Paste and run each file, in this orde
 6. `supabase/migrations/0005_book_covers.sql` (a public bucket for book covers you upload in the vault)
 7. `supabase/migrations/0006_half_star_ratings.sql` (book ratings in half steps, 0.5 to 5)
 8. `supabase/migrations/0007_library_genres_credits.sql` (format, genres, credits with roles, translation and series; ADR 0012)
+9. `supabase/migrations/0008_book_visibility.sql` (hide a book from the public Library; drops the old author column; ADR 0013)
 
 Each should end with "Success. No rows returned".
 

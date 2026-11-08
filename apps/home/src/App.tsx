@@ -1,20 +1,35 @@
-import { SiteHeader, contact, siteUrl } from "@site/ui";
-import { byline, listBooks, listLearning, listPeople, listPosts, formatDate, formatMonth, learningStageLabel, useAsync } from "@site/data";
+import { SiteHeader, contact, features, siteUrl } from "@site/ui";
+import { useState } from "react";
+import {
+  byline, listBooks, listLearning, listPeople, listPosts, formatDate, formatMonth, learningStageLabel, useAsync,
+  type AsyncState, type Book,
+} from "@site/data";
 import { about, hero, hobbies, learning, projects, whatIDo } from "./content";
 import "./home.css";
 
+/**
+ * The hero's book card and the "Lately" tiles show the same books, so the homepage asks once
+ * and shares the answer (one request, not two).
+ */
+async function loadLately() {
+  const [posts, books, people] = await Promise.all([listPosts(), listBooks(), listPeople()]);
+  return { posts, books, people };
+}
+type LatelyData = Awaited<ReturnType<typeof loadLately>>;
+
 export function App() {
+  const { state } = useAsync(loadLately);
   return (
     <>
-      <Hero />
+      <Hero lately={state} />
       <main id="main">
         <Elsewhere />
         <About />
         <Hobbies />
         <WhatIDo />
-        <Projects />
+        {features.projects && <Projects />}
         <Learning />
-        <Lately />
+        <Lately lately={state} />
       </main>
       <Contact />
     </>
@@ -37,7 +52,45 @@ function Cross({ left, top }: { left: string; top: number }) {
   );
 }
 
-function Hero() {
+/**
+ * What the hero's book card shows: what I'm reading now; if nothing, the last book I finished;
+ * if neither, no card. The list arrives newest-finished first (listBooks), so the first match is the latest.
+ */
+function heroBook(books: Book[]): { book: Book; label: string; href: string } | null {
+  const reading = books.filter((b) => b.shelf === "reading");
+  if (reading.length) {
+    return { book: reading[0], label: `✳ Reading${reading.length > 1 ? ` · ${reading.length}` : ""}`, href: siteUrl("library", "/?shelf=reading") };
+  }
+  const read = books.filter((b) => b.shelf === "read");
+  const last = read.find((b) => b.finished_on) ?? read[0];
+  return last ? { book: last, label: "✳ Last read", href: siteUrl("library", "/?shelf=read") } : null;
+}
+
+function HeroBook({ lately }: { lately: AsyncState<LatelyData> }) {
+  const [failed, setFailed] = useState(false);
+  // While loading, hold the card's place so nothing jumps when the cover arrives.
+  if (lately.status === "loading") return <div className="hero-book hero-book-loading" aria-hidden="true"><span className="hero-book-art" /></div>;
+  if (lately.status === "error") return null; // the front page never shows a database error
+  const pick = heroBook(lately.data.books);
+  if (!pick) return null;
+  const { book, label, href } = pick;
+  const by = byline(book.credits);
+  return (
+    <a className="hero-book" href={href}>
+      {book.cover_url && !failed ? (
+        <img className="hero-book-art" src={book.cover_url} alt={`Cover of ${book.title}${by ? ` by ${by}` : ""}`} width={160} height={240} onError={() => setFailed(true)} />
+      ) : (
+        <span className="hero-book-art hero-book-typeset"><span className="grot">{book.title}</span><span className="small">{by}</span></span>
+      )}
+      <span className="hero-book-strip">
+        <span className="mono">{label}</span>
+        <span className="mono">/Library</span>
+      </span>
+    </a>
+  );
+}
+
+function Hero({ lately }: { lately: AsyncState<LatelyData> }) {
   return (
     <section className="hero on-dark" aria-label="Introduction">
       <div className="hero-grid" aria-hidden="true" />
@@ -59,13 +112,7 @@ function Hero() {
       />
       <p className="mono hero-line">{hero.line}</p>
 
-      <a className="hero-book" href={siteUrl("library")}>
-        <img src="/images/tuesdays-with-morrie.webp" alt="Cover of Tuesdays with Morrie by Mitch Albom" width={160} height={160} />
-        <span className="hero-book-strip">
-          <span className="mono">✳ Reading</span>
-          <span className="mono">/Library</span>
-        </span>
-      </a>
+      <HeroBook lately={lately} />
 
       <div className="hero-name">
         <span>©{new Date().getFullYear()}</span>
@@ -251,16 +298,14 @@ function Learning() {
 }
 
 /** Live from the database, so the homepage stays current without edits. */
-function Lately() {
-  const { state } = useAsync(async () => {
-    const [posts, books, people] = await Promise.all([listPosts(), listBooks(), listPeople()]);
-    return {
-      post: posts[0] ?? null,
-      reading: books.filter((b) => b.shelf === "reading"), // several at once is normal
-      person: [...people].sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null,
-    };
-  });
-  const data = state.status === "ready" ? state.data : null;
+function Lately({ lately: state }: { lately: AsyncState<LatelyData> }) {
+  const data = state.status === "ready"
+    ? {
+        post: state.data.posts[0] ?? null,
+        reading: state.data.books.filter((b) => b.shelf === "reading"), // several at once is normal
+        person: [...state.data.people].sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null,
+      }
+    : null;
 
   return (
     <section className="wrap section" aria-labelledby="lately-h">

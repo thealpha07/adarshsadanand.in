@@ -10,7 +10,7 @@ export const hero = {
   firstName: "Adarsh",
   ghostWord: "Engineer",
   line: "I absorb, comprehend and build stuff. Neurodivergent, but I get things done.",
-  role: "Tech Enthusiast",
+  role: "Introvert · ADHD",
   fullName: "Adarsh Sadanand",
   portraitAlt: "Adarsh laughing, arms crossed, in a navy kurta",
 };

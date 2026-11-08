@@ -3,7 +3,7 @@ import { Link, Route, Routes, useNavigate, useParams } from "react-router";
 import { Empty, Failed, Loading } from "@site/ui";
 import {
   byline, categoryLabel, formatLabel, hasVolumes, listGenres, roleLabel, supabase, useAsync,
-  type BookCategory, type BookFormat, type Credit, type CreditRole, type Genre, type Shelf,
+  type BookCategory, type BookFormat, type Credit, type CreditRole, type Genre, type Shelf, type Visibility,
 } from "@site/data";
 import { Area, Check, ConfirmButton, FormActions, Select, Text } from "./fields";
 import { toWebp } from "./images";
@@ -20,11 +20,11 @@ export function BooksPage() {
 const shelfLabel: Record<Shelf, string> = { want: "Want to read", reading: "Reading", read: "Read" };
 
 type CreditRow = { position: number; name: string; role: CreditRole };
-type BookRow = { id: string; title: string; shelf: Shelf; book_credits: CreditRow[] };
+type BookRow = { id: string; title: string; shelf: Shelf; visibility: Visibility; book_credits: CreditRow[] };
 
 /** The list shows each book's byline, built from its credits like everywhere else. */
 async function listAll(): Promise<BookRow[]> {
-  const { data, error } = await supabase.from("books").select("id, title, shelf, book_credits(name, role, position)").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("books").select("id, title, shelf, visibility, book_credits(name, role, position)").order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data as BookRow[];
 }
@@ -47,7 +47,10 @@ function BookList() {
             <li key={b.id}>
               <Link to={b.id} className="edit-row">
                 <span className="grot" style={{ fontSize: 20, lineHeight: "23px" }}>{b.title}</span>
-                <span className="small body-2">{byline(sortCredits(b.book_credits))}</span>
+                <span className="small body-2">
+                  {byline(sortCredits(b.book_credits))}
+                  {b.visibility === "private" && <span className="hidden-badge">Hidden</span>}
+                </span>
                 <span className={`status${b.shelf === "reading" ? " live" : ""}`}>{shelfLabel[b.shelf]}</span>
               </Link>
             </li>
@@ -64,6 +67,8 @@ const empty = {
   translated_from: "",
   shelf: "want" as Shelf, rating: "", started_on: "", finished_on: "", volumes_read: "", volumes_total: "",
   one_liner: "", recommended: false, note: "", note_public: false,
+  // New books start public; hiding is the exception (ADR 0013).
+  visibility: "public" as Visibility,
 };
 type Form = typeof empty;
 type EditCredit = Credit & { key: string };
@@ -128,6 +133,7 @@ function BookEditor() {
         started_on: text(data.started_on), finished_on: text(data.finished_on),
         volumes_read: text(data.volumes_read), volumes_total: text(data.volumes_total),
         one_liner: text(data.one_liner), recommended: data.recommended, note: text(data.note), note_public: data.note_public,
+        visibility: data.visibility,
       });
       const rows = sortCredits(data.book_credits as CreditRow[]).map((c) => ({ ...c, key: crypto.randomUUID() }));
       setCredits(rows.length ? rows : [newCredit()]);
@@ -334,6 +340,15 @@ function BookEditor() {
         <Check id="rec" label="Recommend this book" hint="(adds a Recommended badge)" checked={form.recommended} onChange={(v) => set("recommended", v)} />
         <Area id="note" label="Note" value={form.note} onChange={(v) => set("note", v)} />
         <Check id="notepub" label="Show my note publicly" hint="(off: only you see it)" checked={form.note_public} onChange={(v) => set("note_public", v)} />
+      </fieldset>
+
+      <fieldset className="editor-section">
+        <legend>Who can see it</legend>
+        <Check id="visible" label="Show in the public Library" hint="(off: only you see it, here in the vault)"
+          checked={form.visibility === "public"} onChange={(v) => set("visibility", v ? "public" : "private")} />
+        {form.visibility === "private" && (
+          <p className="hint">Hidden from books.adarshsadanand.in: its card, the shelf counts, search, and the homepage.</p>
+        )}
       </fieldset>
 
       <FormActions error={error} saved={saved} savedAt={savedAt}>

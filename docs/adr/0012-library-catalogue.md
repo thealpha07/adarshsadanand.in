@@ -38,7 +38,7 @@ With 39 books loaded, one free-text `author` column and no way to group books st
 - **A database rule requiring a translator for translated books.** Some editions don't credit one, so the vault nudges instead.
 
 ## Consequences
-- **Expand, then contract.** `books.author` is kept, nullable and no longer written, for one release, then a later migration drops it. Migration 0007 copies every existing author string into Author credits (split on commas and "and").
+- **Expand, then contract.** `books.author` was kept, nullable and no longer written, for one release; migration 0008 dropped it (ADR 0013). Migration 0007 copies every existing author string into Author credits (split on commas and "and").
 - **Release order.** Run 0007, then merge straight away. Until the new vault is deployed, the old vault can't save books (it writes `recommend_reason`, which 0007 renames).
 - **New genres** are rows in `genres`. Renaming a genre's key cascades to the books that use it.
 - **Search** covers title, original title, every credited name and the series.
