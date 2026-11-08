@@ -36,6 +36,15 @@ export const publicNav: { key: SiteKey; label: string }[] = [
   { key: "people", label: "People" },
 ];
 
+/**
+ * Sections switched off for now, without deleting their content.
+ * projects: the homepage "Selected work" section and the menu's "Work" link (hidden 8 Nov 2026 until
+ * the write-ups are better; the content stays in apps/home/src/content.ts).
+ */
+export const features = {
+  projects: false,
+};
+
 export const contact = {
   email: "adarshsadanand79@gmail.com",
   github: "https://github.com/thealpha07",

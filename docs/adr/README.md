@@ -13,3 +13,5 @@ Each file records one decision: the context, what was decided, the alternatives 
 - [The CCI MVP runs in the browser, behind a storage port](0009-cci-mvp-in-the-browser.md)
 - [Self-hosted fonts and a Content-Security-Policy](0010-self-hosted-fonts-and-csp.md)
 - [React Router 7](0011-react-router-7.md)
+- [Library catalogue: format, genres, credits, translation, series](0012-library-catalogue.md)
+- [Hidden books](0013-hidden-books.md)

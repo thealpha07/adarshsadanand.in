@@ -43,7 +43,7 @@ The UI never decides privacy. If a page has a bug, the database still refuses.
 | Table | Purpose | Public through |
 | --- | --- | --- |
 | `posts` | Thoughts: title, subtitle, slug, Markdown body, tags, draft/published | `posts_public`: published and dated in the past |
-| `books` | Library: format, fiction or non-fiction, shelf, rating, one-liner, recommendation, note, translation, series, dates | `books_public`: note hidden unless `note_public`; credits and genre keys folded in |
+| `books` | Library: format, fiction or non-fiction, shelf, rating, one-liner, recommendation, note, translation, series, dates, visibility | `books_public`: public books only (ADR 0013); note hidden unless `note_public`; credits and genre keys folded in |
 | `book_credits` | Who made each book: name, role (author, story, art, translator, editor), order | Through `books_public` only |
 | `genres`, `book_genres` | The genre list and which books have which | `genres` readable by everyone (for the filter) |
 | `people` | Alias, context, symbol, impression, visibility, private initials | `people_public`: public rows, no initials |

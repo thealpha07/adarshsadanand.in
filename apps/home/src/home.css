@@ -23,7 +23,11 @@
   position: absolute; right: var(--edge); top: 300px; width: 176px; background: #fff; color: var(--ink);
   padding: 8px; box-shadow: var(--shadow-float); display: flex; flex-direction: column; gap: 8px; text-decoration: none;
 }
-.hero-book img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: top; }
+/* The cover is shown whole on the white card, like the Library's covers (never cropped to a square). */
+.hero-book-art { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: contain; background: #fff; }
+.hero-book-typeset { display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 14px; background: var(--midnight); color: #fff; text-align: center; }
+.hero-book-typeset .grot { font-size: 18px; line-height: 20px; }
+.hero-book-loading .hero-book-art { background: var(--sunken); }
 .hero-book-strip { display: flex; justify-content: space-between; }
 .hero-book-strip .mono { font-size: 10px; }
 .hero-name { position: absolute; left: var(--edge); bottom: 40px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }

@@ -116,3 +116,9 @@ td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: m
 .genre-chip input:checked + span { background: var(--ink); border-color: var(--ink); color: #fff; }
 .genre-chip input:checked + span::before { content: "✓"; margin-right: 6px; }
 .genre-chip input:focus-visible + span { outline: 2px solid var(--cobalt); outline-offset: 3px; }
+
+/* "Hidden" next to a book's byline in the list: only you can see that book. */
+.hidden-badge {
+  display: inline-flex; align-items: center; margin-left: 10px; padding: 0 8px; min-height: 22px; border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm); font: 700 11px/14px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
