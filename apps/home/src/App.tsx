@@ -271,9 +271,9 @@ function Learning() {
   const items = state.status === "ready" ? state.data : [];
 
   return (
-    <section className="wrap split section" aria-labelledby="learn-h" aria-busy={state.status === "loading"}>
+    <section className="wrap split section learning-section" aria-labelledby="learn-h" aria-busy={state.status === "loading"}>
       <span className="tag">Currently learning</span>
-      <div className="stack-32">
+      <div className="stack-24">
         <h2 id="learn-h" className="grot h-section">
           <TwoTone parts={learning.heading} />
         </h2>
