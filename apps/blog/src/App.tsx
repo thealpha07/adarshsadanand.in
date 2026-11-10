@@ -1,7 +1,7 @@
 import { BrowserRouter, Link, Route, Routes, useParams } from "react-router";
 import { useEffect, type ReactNode } from "react";
 import { Empty, Failed, Loading, PageBand, SiteFooter, SiteHeader } from "@site/ui";
-import { blogImageUrl, formatDate, getPost, listPosts, renderMarkdown, useAsync, type Post } from "@site/data";
+import { blogImageUrl, formatDate, getPost, listPosts, renderMarkdown, splitAfterParagraphs, useAsync, type Post } from "@site/data";
 import "./blog.css";
 
 export function App() {
@@ -55,24 +55,41 @@ function Title({ post }: { post: Post }) {
   );
 }
 
+/** How many of the newest posts get a card; older ones are listed by date below. */
+const CARDS = 3;
+
+/**
+ * The newest three posts as cards that step down left, right, left, like a magazine spread; every older post
+ * in the dated list. Cards stay in reading order (newest first) for keyboards and screen readers; the stagger
+ * is only CSS. Design: docs/adr/0014-library-details-and-thoughts-layout.md
+ */
 function PostList({ posts }: { posts: Post[] }) {
-  const [latest, ...rest] = posts;
-  const cover = blogImageUrl(latest.cover_path);
+  const cards = posts.slice(0, CARDS);
+  const rest = posts.slice(CARDS);
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 72 }}>
-      <Link to={`/${latest.slug}`} className="feature">
-        {cover ? <img src={cover} alt="" className="feature-cover" /> : <div className="feature-cover feature-cover-empty" aria-hidden="true"><span className="grot">✳</span></div>}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <span className="tag">Latest</span>
-          <span className="grot feature-title"><Title post={latest} /></span>
-          {latest.excerpt && <span className="body-lg body-2">{latest.excerpt}</span>}
-          <span className="mono muted">{formatDate(latest.published_at)} · {readingTime(latest.body_md)}{latest.tags.length ? ` · ${latest.tags.join(", ")}` : ""}</span>
-        </div>
-      </Link>
+    <div style={{ display: "flex", flexDirection: "column", gap: 96 }}>
+      <ol className="post-cards">
+        {cards.map((p, i) => {
+          const cover = blogImageUrl(p.cover_path);
+          return (
+            <li key={p.id} className="post-card-item">
+              <Link to={`/${p.slug}`} className="post-card">
+                {cover
+                  ? <img src={cover} alt="" className="post-card-cover" loading={i ? "lazy" : undefined} />
+                  : <div className="post-card-cover feature-cover-empty" aria-hidden="true"><span className="grot">✳</span></div>}
+                {i === 0 && <span className="tag">Latest</span>}
+                <span className="grot post-card-title"><Title post={p} /></span>
+                {p.excerpt && <span className="body-2 post-card-excerpt">{p.excerpt}</span>}
+                <span className="mono muted">{formatDate(p.published_at)} · {readingTime(p.body_md)}{p.tags.length ? ` · ${p.tags.join(", ")}` : ""}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
 
       {rest.length > 0 && (
         <section aria-labelledby="all-h">
-          <h2 id="all-h" className="grot" style={{ fontSize: 56, lineHeight: "56px", marginBottom: 24 }}>All <span className="soft">thoughts</span></h2>
+          <h2 id="all-h" className="grot" style={{ fontSize: "clamp(36px, 9vw, 56px)", lineHeight: 1, marginBottom: 24 }}>All <span className="soft">thoughts</span></h2>
           <ol className="post-list">
             {rest.map((p) => (
               <li key={p.id}>
@@ -105,6 +122,7 @@ function PostPage() {
   if (!post) return <PlainBand><Empty>This thought doesn't exist, or isn't published yet. <Link to="/">See all thoughts</Link>.</Empty></PlainBand>;
 
   const cover = blogImageUrl(post.cover_path);
+  const [opening, rest] = splitAfterParagraphs(post.body_md, 2);
   return (
     <>
       <section className="band on-dark">
@@ -121,8 +139,10 @@ function PostPage() {
       </section>
       <main id="main" style={{ paddingTop: 56, paddingBottom: 96 }}>
         <article>
+          {/* Two paragraphs first, so the post opens with words; then the image; then the rest. */}
+          <div className="read prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(opening) }} />
           {cover && <img src={cover} alt="" className="post-cover" />}
-          <div className="read prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(post.body_md) }} />
+          {rest && <div className="read prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(rest) }} />}
         </article>
       </main>
     </>

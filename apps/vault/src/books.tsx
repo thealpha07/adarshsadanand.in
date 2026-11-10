@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Link, Route, Routes, useNavigate, useParams } from "react-router";
+import { Link, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { Empty, Failed, Loading } from "@site/ui";
 import {
-  byline, categoryLabel, formatLabel, hasVolumes, listGenres, roleLabel, supabase, useAsync,
+  byline, categoryLabel, formatLabel, hasVolumes, listGenres, matchesQuery, roleLabel, searchText, supabase, useAsync,
   type BookCategory, type BookFormat, type Credit, type CreditRole, type Genre, type Shelf, type Visibility,
 } from "@site/data";
 import { Area, Check, ConfirmButton, FormActions, Select, Text } from "./fields";
@@ -20,18 +20,73 @@ export function BooksPage() {
 const shelfLabel: Record<Shelf, string> = { want: "Want to read", reading: "Reading", read: "Read" };
 
 type CreditRow = { position: number; name: string; role: CreditRole };
-type BookRow = { id: string; title: string; shelf: Shelf; visibility: Visibility; book_credits: CreditRow[] };
+type BookRow = {
+  id: string; title: string; original_title: string | null; series: string | null; shelf: Shelf; visibility: Visibility;
+  cover_url: string | null; isbn: string | null; finished_on: string | null; created_at: string;
+  book_credits: CreditRow[]; book_genres: { genre: string }[];
+};
 
 /** The list shows each book's byline, built from its credits like everywhere else. */
 async function listAll(): Promise<BookRow[]> {
-  const { data, error } = await supabase.from("books").select("id, title, shelf, visibility, book_credits(name, role, position)").order("created_at", { ascending: false });
+  const { data, error } = await supabase
+    .from("books")
+    .select("id, title, original_title, series, shelf, visibility, cover_url, isbn, finished_on, created_at, book_credits(name, role, position), book_genres(genre)")
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data as BookRow[];
 }
 const sortCredits = (rows: CreditRow[]): Credit[] => [...rows].sort((a, b) => a.position - b.position).map(({ name, role }) => ({ name, role }));
 
+/** What a book is missing for the public Library to show it well. Empty when nothing is. */
+function gaps(b: BookRow): string[] {
+  return [!b.cover_url && "No cover", !b.book_genres.length && "No genre", !b.isbn && "No ISBN"].filter(Boolean) as string[];
+}
+
+type SortKey = "added" | "title" | "author" | "finished";
+const sortLabel: Record<SortKey, string> = { added: "Recently added", title: "Title A–Z", author: "Author A–Z", finished: "Recently finished" };
+const collator = new Intl.Collator("en", { sensitivity: "base", numeric: true });
+
+/**
+ * The list's search and filters live in the address (?q=…&shelf=read&attention=1), so opening a book and
+ * coming back returns to the same list. The editor's "← Library" link uses the last one seen.
+ */
+let lastListSearch = "";
+
 function BookList() {
   const { state } = useAsync(listAll);
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  lastListSearch = location.search;
+
+  const q = params.get("q") ?? "";
+  const shelf = (params.get("shelf") ?? "") as Shelf | "";
+  const vis = (params.get("visibility") ?? "") as Visibility | "";
+  const attention = params.get("attention") === "1";
+  const sort = (params.get("sort") ?? "added") as SortKey;
+  // replace: typing a search shouldn't add one Back-button step per letter.
+  const set = (key: string, value: string) => setParams((p) => { if (value) p.set(key, value); else p.delete(key); return p; }, { replace: true });
+
+  const rows = useMemo(() => {
+    if (state.status !== "ready") return [];
+    return state.data.map((b) => {
+      const credits = sortCredits(b.book_credits);
+      return { ...b, by: byline(credits), text: searchText({ ...b, credits }), missing: gaps(b) };
+    });
+  }, [state]);
+  const needAttention = rows.filter((r) => r.missing.length > 0).length;
+
+  const shown = useMemo(() => {
+    const list = rows.filter((r) =>
+      matchesQuery(r.text, q) && (!shelf || r.shelf === shelf) && (!vis || r.visibility === vis) && (!attention || r.missing.length > 0));
+    if (sort === "title") list.sort((a, b) => collator.compare(a.title, b.title));
+    // By the byline as written: splitting out surnames would get Japanese names (family name first) wrong.
+    if (sort === "author") list.sort((a, b) => collator.compare(a.by, b.by) || collator.compare(a.title, b.title));
+    // Unfinished books go last, newest finish first.
+    if (sort === "finished") list.sort((a, b) => (b.finished_on ?? "").localeCompare(a.finished_on ?? ""));
+    return list; // "added": already newest first from the query
+  }, [rows, q, shelf, vis, attention, sort]);
+  const filtered = q.trim() !== "" || shelf !== "" || vis !== "" || attention;
+
   return (
     <div className="stack-28">
       <div className="page-head">
@@ -42,20 +97,62 @@ function BookList() {
       {state.status === "error" && <Failed message={state.message} />}
       {state.status === "ready" && state.data.length === 0 && <Empty>No books yet.</Empty>}
       {state.status === "ready" && state.data.length > 0 && (
-        <ul className="edit-list">
-          {state.data.map((b) => (
-            <li key={b.id}>
-              <Link to={b.id} className="edit-row">
-                <span className="grot" style={{ fontSize: 20, lineHeight: "23px" }}>{b.title}</span>
-                <span className="small body-2">
-                  {byline(sortCredits(b.book_credits))}
-                  {b.visibility === "private" && <span className="hidden-badge">Hidden</span>}
-                </span>
-                <span className={`status${b.shelf === "reading" ? " live" : ""}`}>{shelfLabel[b.shelf]}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="list-tools">
+            <div className="list-search" role="search">
+              <label htmlFor="book-search" className="visually-hidden">Search titles, authors and translators</label>
+              <input id="book-search" type="search" placeholder="Search titles, authors, translators" autoComplete="off"
+                value={q} onChange={(e) => set("q", e.target.value)} onKeyDown={(e) => e.key === "Escape" && set("q", "")} />
+            </div>
+            <label className="list-filter">
+              <span className="mono muted">Shelf</span>
+              <select value={shelf} onChange={(e) => set("shelf", e.target.value)}>
+                <option value="">All</option>
+                {(Object.keys(shelfLabel) as Shelf[]).map((s) => <option key={s} value={s}>{shelfLabel[s]}</option>)}
+              </select>
+            </label>
+            <label className="list-filter">
+              <span className="mono muted">Visibility</span>
+              <select value={vis} onChange={(e) => set("visibility", e.target.value)}>
+                <option value="">All</option>
+                <option value="public">Public</option>
+                <option value="private">Hidden</option>
+              </select>
+            </label>
+            <label className="list-filter">
+              <span className="mono muted">Sort</span>
+              <select value={sort} onChange={(e) => set("sort", e.target.value === "added" ? "" : e.target.value)}>
+                {(Object.keys(sortLabel) as SortKey[]).map((k) => <option key={k} value={k}>{sortLabel[k]}</option>)}
+              </select>
+            </label>
+            <button type="button" className="attention-toggle" aria-pressed={attention} onClick={() => set("attention", attention ? "" : "1")}>
+              Needs attention <span className="mono">{needAttention}</span>
+            </button>
+          </div>
+          <p className="mono muted list-count" role="status">
+            {filtered ? `Showing ${shown.length} of ${rows.length}` : `${rows.length} books`}
+            {filtered && <> · <button type="button" className="link-button" onClick={() => setParams({}, { replace: true })}>Clear filters</button></>}
+          </p>
+          {shown.length === 0 ? (
+            <Empty>{attention && !q && !shelf && !vis ? "Nothing needs attention. Every book has a cover, a genre and an ISBN." : "No books match. Try part of a title or a surname."}</Empty>
+          ) : (
+            <ul className="edit-list">
+              {shown.map((b) => (
+                <li key={b.id}>
+                  <Link to={b.id} className="edit-row compact-row">
+                    <span className="grot row-title" title={b.title}>{b.title}</span>
+                    <span className="small body-2 row-by">
+                      <span className="row-by-name">{b.by}</span>
+                      {b.visibility === "private" && <span className="hidden-badge">Hidden</span>}
+                      {attention && b.missing.length > 0 && <span className="row-gaps">{b.missing.join(" · ")}</span>}
+                    </span>
+                    <span className={`status${b.shelf === "reading" ? " live" : ""}`}>{shelfLabel[b.shelf]}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </div>
   );
@@ -215,7 +312,7 @@ function BookEditor() {
   async function remove() {
     const { error } = await supabase.from("books").delete().eq("id", id);
     if (error) return setError(error.message);
-    navigate("..");
+    navigate(`..${lastListSearch}`);
   }
 
   // Show the genres that fit the chosen side, plus the "either" ones; with no side chosen, show all.
@@ -235,7 +332,7 @@ function BookEditor() {
 
   return (
     <form onSubmit={save} className="editor">
-      <Link to=".." className="mono muted">← Library</Link>
+      <Link to={`..${lastListSearch}`} className="mono muted">← Library</Link>
       <h1 className="grot" style={{ fontSize: 48, lineHeight: "48px" }}>{isNew ? "Add a book" : "Edit book"}</h1>
 
       <fieldset className="editor-section">

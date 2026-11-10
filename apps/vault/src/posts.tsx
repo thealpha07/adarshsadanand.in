@@ -34,8 +34,11 @@ function PostList() {
         <ul className="edit-list">
           {state.data.map((p) => (
             <li key={p.id}>
-              <Link to={p.id} className="edit-row">
-                <span className="grot" style={{ fontSize: 22, lineHeight: "25px" }}>{p.title}</span>
+              <Link to={p.id} className="edit-row compact-row post-edit-row">
+                {/* The whole title on one line, second phrase in grey as on the blog; "…" only when the column runs out. */}
+                <span className="grot row-title" title={p.subtitle ? `${p.title} ${p.subtitle}` : p.title}>
+                  {p.title}{p.subtitle && <> <span className="soft">{p.subtitle}</span></>}
+                </span>
                 <span className={`status ${p.status}`}>{p.status === "published" ? "Published" : "Draft"}</span>
                 <span className="small muted">Edited {formatDate(p.updated_at)}</span>
               </Link>
@@ -117,7 +120,7 @@ function PostEditor() {
       <Link to=".." className="mono muted">← All thoughts</Link>
       <h1 className="grot" style={{ fontSize: 48, lineHeight: "48px" }}>{isNew ? "New thought" : "Edit thought"}</h1>
       <Text id="title" label="Title" required value={form.title} onChange={(v) => { set("title", v); if (!slugTouched) set("slug", slugify(v)); }} />
-      <Text id="subtitle" label="Second phrase (shown in grey)" value={form.subtitle} onChange={(v) => set("subtitle", v)} hint="Optional. Example: “The me you see and the me I know”." />
+      <Text id="subtitle" label="Second phrase (shown in grey)" value={form.subtitle} onChange={(v) => set("subtitle", v)} />
       <Text id="slug" label="Web address" value={form.slug} onChange={(v) => { setSlugTouched(true); set("slug", slugify(v)); }} hint={`blog.adarshsadanand.in/${form.slug || "…"}`} />
       <Area id="excerpt" label="Excerpt" rows={3} value={form.excerpt} onChange={(v) => set("excerpt", v)} hint="One or two sentences for the list page." />
       <div className="field">

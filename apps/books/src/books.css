@@ -38,7 +38,12 @@
 .shelf[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
 
 .book-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 40px 28px; }
-.book { display: flex; flex-direction: column; gap: 10px; }
+/* The whole card is one link that opens the details. */
+.book { display: flex; flex-direction: column; gap: 10px; height: 100%; color: var(--ink); text-decoration: none; border-radius: var(--radius-sm); }
+.book:hover .book-title { color: var(--cobalt); }
+.book:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 6px; }
+.book-title { font-size: 18px; line-height: 21px; }
+.book-signals { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 /* Covers: a white mat around the art, like the homepage's book card. The art area is always 2:3 so
    the grid lines up, and object-fit: contain shows the whole cover; any leftover space is the mat's white.
    The shadow is softer than the homepage's (that one floats on a dark hero; these sit on a light page). */
@@ -53,7 +58,6 @@
   border-radius: var(--radius-sm); font: 700 12px/16px var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase;
   background: var(--teal); color: #fff;
 }
-.note summary { cursor: pointer; font-size: 15px; color: var(--teal); font-weight: 700; min-height: var(--tap-min); display: flex; align-items: center; }
 
 .now-reading { width: 300px; max-width: 100%; background: #fff; color: var(--ink); padding: 10px; display: flex; gap: 14px; box-shadow: var(--shadow-float); }
 .now-cover { width: 96px; flex: none; padding: 0; box-shadow: none; } /* already on a white card */
@@ -70,5 +74,52 @@
 /* Half-star ratings: the filled copy of each star is cropped to 0 %, 50 % or 100 % of its width. */
 .stars { display: inline-flex; align-items: center; gap: 2px; color: var(--ink); }
 .star { position: relative; display: inline-flex; width: 16px; height: 16px; }
-.star-fill { position: absolute; inset: 0 auto 0 0; overflow: hidden; }
+/* Both layers are flex boxes and both SVGs are blocks. An inline SVG sits on the text baseline, which pushed the
+   filled copy a few pixels below the outline: that was the "offset" shading. */
+.star svg { display: block; flex: none; }
+.star-fill { position: absolute; inset: 0 auto 0 0; display: flex; overflow: hidden; }
 .star-value { margin-left: 6px; font-size: 12px; color: var(--muted); }
+
+/* ---------------------------------------------------------------------------------------------
+   Book details: a centred panel over the blurred page. Never full screen: a 16px margin on phones,
+   at most 720px wide and 85% of the screen tall. Long notes scroll inside the panel, not the page.
+   --------------------------------------------------------------------------------------------- */
+.book-dialog {
+  width: min(720px, calc(100vw - 32px)); max-width: none; max-height: min(85vh, 85dvh); margin: auto; padding: 0;
+  border: 0; border-radius: var(--radius-md); background: var(--surface); color: var(--ink);
+  box-shadow: 0 24px 64px rgba(11, 15, 20, 0.35), 0 2px 8px rgba(11, 15, 20, 0.12); overflow: hidden;
+}
+/* ::backdrop doesn't see the page's custom properties in every browser, so plain values here.
+   Without backdrop-filter support, the page is just dimmed. */
+.book-dialog::backdrop { background: rgba(11, 15, 20, 0.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+html:has(.book-dialog[open]) { overflow: hidden; } /* the page behind doesn't scroll while the panel is open */
+.book-dialog-panel { display: flex; flex-direction: column; max-height: inherit; }
+.book-dialog-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 8px 8px 24px; border-bottom: 1px solid var(--line); }
+.dialog-close {
+  flex: none; width: var(--tap-min); height: var(--tap-min); border: 0; border-radius: var(--radius-sm); background: transparent;
+  color: var(--ink); font-size: 18px; cursor: pointer;
+}
+.dialog-close:hover { background: var(--line); }
+.book-dialog-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; padding: 24px; overflow-y: auto; overscroll-behavior: contain; }
+.book-dialog-cover { align-self: start; }
+.book-dialog-text { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.book-dialog-title { margin: 0; font-size: clamp(24px, 3vw, 32px); line-height: 1.05; }
+.book-dialog-title:focus { outline: none; }
+.book-dialog .one-liner { font-size: 17px; line-height: 26px; }
+.genre-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.book-note { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+.book-note p { margin: 0; white-space: pre-line; line-height: 25px; }
+.book-dates { font-size: 12px; }
+.book-dialog-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 24px; border-top: 1px solid var(--line); }
+.book-dialog-nav .link-button { min-height: var(--tap-min); font-weight: 700; text-decoration: none; }
+.book-dialog-nav .link-button:disabled { color: var(--muted); opacity: 0.5; cursor: default; }
+@media (max-width: 600px) {
+  .book-dialog-top { padding-left: 16px; }
+  .book-dialog-body { grid-template-columns: 1fr; gap: 20px; padding: 16px; }
+  .book-dialog-cover { width: 112px; }
+  .book-dialog-nav { padding: 4px 16px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .book-dialog[open] { animation: dialog-in 160ms ease-out; }
+  @keyframes dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+}
