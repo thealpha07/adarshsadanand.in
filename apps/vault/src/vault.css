@@ -122,3 +122,35 @@ td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: m
   display: inline-flex; align-items: center; margin-left: 10px; padding: 0 8px; min-height: 22px; border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm); font: 700 11px/14px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
 }
+
+/* Compact list rows (Library and Thoughts): 16px titles on one line, ending in "…" only when the column is full.
+   The full title is in the row's tooltip and, of course, in the editor. */
+.compact-row { padding: 10px 4px; }
+.row-title { min-width: 0; font-size: 16px; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-by { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 0; min-width: 0; }
+.row-by-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-gaps { flex-basis: 100%; font: 12px/16px var(--font-mono); color: var(--danger); }
+/* Thoughts: the title takes every bit of width the status and date don't need. */
+.post-edit-row { grid-template-columns: minmax(0, 1fr) 7.5rem 10rem; }
+@media (max-width: 640px) {
+  .post-edit-row { grid-template-columns: 1fr; }
+  .row-title { white-space: normal; } /* on a phone the row has the full width, so let the title wrap */
+}
+
+/* The vault Library's search, filters and sort: one row on wide screens, wrapping on narrow ones. */
+.list-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.list-search { flex: 1 1 260px; max-width: 420px; }
+.list-search input, .list-filter select {
+  width: 100%; min-height: var(--tap-min); padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; /* 16px stops iOS zooming in */
+}
+.list-filter { display: flex; flex-direction: column; gap: 4px; }
+.list-filter > span { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.list-filter select { width: auto; padding-right: 32px; }
+.attention-toggle {
+  display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap-min); padding: 0 16px; border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); background: transparent; color: var(--ink); font: 700 14px/20px var(--font-body, inherit); cursor: pointer;
+}
+.attention-toggle[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.list-count { margin: -12px 0 0; font-size: 13px; }
+.link-button { border: 0; padding: 0; background: none; color: var(--teal); font: inherit; text-decoration: underline; cursor: pointer; }

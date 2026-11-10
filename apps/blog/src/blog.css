@@ -1,13 +1,34 @@
-.feature { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: center; color: var(--ink); text-decoration: none; }
-.feature:hover .feature-title { color: var(--cobalt); }
-@media (max-width: 860px) { .feature { grid-template-columns: 1fr; gap: 24px; } }
-.feature-cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius-sm); }
+/* ---------------------------------------------------------------------------------------------
+   The newest three posts, staggered: card 1 top left, card 2 a step lower on the right, card 3 below card 1.
+   Each card spans two grid rows, offset by one, so a card can never overlap another whatever their heights;
+   the first row is the fixed "step". On narrow screens they stack in one column.
+   --------------------------------------------------------------------------------------------- */
+.post-cards {
+  --step: clamp(120px, 14vw, 200px);
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: var(--step); column-gap: clamp(32px, 7vw, 112px); row-gap: 40px;
+}
+.post-card-item:nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+.post-card-item:nth-child(2) { grid-column: 2; grid-row: 2 / span 2; }
+.post-card-item:nth-child(3) { grid-column: 1; grid-row: 3 / span 2; }
+.post-card { display: flex; flex-direction: column; gap: 14px; color: var(--ink); text-decoration: none; }
+.post-card:hover .post-card-title { color: var(--cobalt); }
+.post-card .tag { align-self: flex-start; }
+.post-card-cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius-sm); }
+.post-card-title { font-size: clamp(26px, 2.6vw, 34px); line-height: 1.06; overflow-wrap: break-word; }
+/* Excerpts are capped at four lines so the cards stay close in height and the stagger stays even. */
+.post-card-excerpt { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 760px) {
+  .post-cards { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; row-gap: 56px; }
+  .post-card-item:nth-child(n) { grid-column: 1; grid-row: auto; }
+}
+
+/* A post without a cover: a dark panel with ✳, the same size as a cover. */
 .feature-cover-empty {
   background: var(--midnight); display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.5);
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px); background-size: 25% 100%;
 }
 .feature-cover-empty .grot { font-size: 96px; }
-.feature-title { font-size: clamp(32px, 4vw, 44px); line-height: 1.05; }
 
 .post-list { list-style: none; margin: 0; padding: 0; }
 .post-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 44px; gap: 32px; padding: 32px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
@@ -18,7 +39,8 @@
 .tag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .chip-dark { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.35); }
 
-.post-cover { width: min(1040px, calc(100% - 2 * var(--gutter))); margin: 0 auto 48px; aspect-ratio: 21 / 9; object-fit: cover; border-radius: var(--radius-sm); }
+/* The cover sits between the opening paragraphs and the rest, a little wider than the text column. */
+.post-cover { display: block; width: min(1040px, calc(100% - 2 * var(--gutter))); margin: 48px auto; aspect-ratio: 21 / 9; object-fit: cover; border-radius: var(--radius-sm); }
 
 .prose { font-size: 19px; line-height: 31px; color: #1f2731; display: flex; flex-direction: column; gap: 24px; }
 .prose > * { margin: 0; }

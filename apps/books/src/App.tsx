@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Empty, Failed, Loading, PageBand, SiteFooter } from "@site/ui";
 import {
-  byline, categoryLabel, creditNotes, formatLabel, listBooks, listGenres, seriesLabel, useAsync, volumesLabel,
-  type Book, type BookFormat, type Genre, type Shelf,
+  byline, categoryLabel, creditNotes, formatDate, formatLabel, listBooks, listGenres, matchesQuery, searchText, seriesLabel,
+  useAsync, volumesLabel, type Book, type BookFormat, type Genre, type Shelf,
 } from "@site/data";
 import "./books.css";
 
@@ -17,9 +17,6 @@ const views: { key: View; label: string }[] = [
   { key: "want", label: shelfLabel.want },
 ];
 const shelfOrder: Record<Shelf, number> = { reading: 0, read: 1, want: 2 };
-
-/** Case- and accent-insensitive, so "dostoevsky" finds "Dostoevsky" and "ogai" finds "Ōgai". */
-const fold = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
 /** Everything the reader can narrow by. "genre" is a genre key, or "fiction" / "nonfiction" for a whole side. */
 type Filters = { view: View; q: string; genre: string; format: BookFormat | "" };
@@ -39,18 +36,19 @@ function readUrl(): Filters {
     format: format && format in formatLabel ? format : "",
   };
 }
-function writeUrl(f: Filters) {
+/** The open book, if any: ?book=<id>. Kept apart from the filters so Back can close the details. */
+const readBookId = () => new URLSearchParams(window.location.search).get("book");
+
+function urlFor(f: Filters, bookId: string | null): string {
   const p = new URLSearchParams();
   if (f.view !== "all") p.set("shelf", f.view);
   if (f.genre) p.set("genre", f.genre);
   if (f.format) p.set("format", f.format);
   if (f.q.trim()) p.set("q", f.q.trim());
+  if (bookId) p.set("book", bookId);
   const search = p.toString();
-  window.history.replaceState(null, "", search ? `?${search}` : window.location.pathname);
+  return search ? `?${search}` : window.location.pathname;
 }
-
-/** Search covers both titles, the series and every credited name (authors, artists, translators). */
-const haystack = (b: Book) => fold([b.title, b.original_title, b.series, ...b.credits.map((c) => c.name)].filter(Boolean).join(" "));
 const inGenre = (b: Book, genre: string) =>
   !genre || (genre === "fiction" || genre === "nonfiction" ? b.category === genre : b.genres.includes(genre));
 
@@ -66,15 +64,41 @@ export function App() {
   const reading = books.filter((b) => b.shelf === "reading");
 
   const [filters, setFilters] = useState<Filters>(readUrl);
-  const update = (patch: Partial<Filters>) => setFilters((f) => { const next = { ...f, ...patch }; writeUrl(next); return next; });
+  const [bookId, setBookId] = useState<string | null>(readBookId);
+  const update = (patch: Partial<Filters>) => setFilters((f) => {
+    const next = { ...f, ...patch };
+    window.history.replaceState(null, "", urlFor(next, bookId));
+    return next;
+  });
+
+  /*
+   * Opening a book adds one history entry (?book=…), so the phone's Back button closes it rather than leaving
+   * the Library. Closing goes back through that entry. A book opened from a shared link has no entry of ours
+   * to go back to, so closing just removes ?book from the address.
+   */
+  const pushedRef = useRef(false);
+  const openBook = (id: string) => {
+    window.history[pushedRef.current ? "replaceState" : "pushState"](null, "", urlFor(filters, id));
+    pushedRef.current = true;
+    setBookId(id);
+  };
+  const closeBook = () => {
+    if (pushedRef.current) { window.history.back(); return; } // popstate below clears bookId
+    window.history.replaceState(null, "", urlFor(filters, null));
+    setBookId(null);
+  };
+  useEffect(() => {
+    const onPop = () => { pushedRef.current = false; setBookId(readBookId()); };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   const { view, q: query, genre, format } = filters;
   const setView = (v: View) => update({ view: v });
   const setQuery = (q: string) => update({ q });
 
   // Search and filters first, then count per shelf, so each tab shows how many matches it holds.
   const matches = useMemo(() => {
-    const q = fold(query.trim());
-    return books.filter((b) => (!q || haystack(b).includes(q)) && inGenre(b, genre) && (!format || b.format === format));
+    return books.filter((b) => matchesQuery(searchText(b), query) && inGenre(b, genre) && (!format || b.format === format));
   }, [books, query, genre, format]);
   const counts = useMemo(() => {
     const c: Record<View, number> = { all: matches.length, reading: 0, read: 0, want: 0 };
@@ -84,6 +108,14 @@ export function App() {
   const visible = view === "all"
     ? [...matches].sort((a, b) => shelfOrder[a.shelf] - shelfOrder[b.shelf]) // stable: keeps the newest-first order within a shelf
     : matches.filter((b) => b.shelf === view);
+
+  // A shared link to a book that's gone (or hidden) just shows the Library, with the address tidied.
+  useEffect(() => {
+    if (state.status === "ready" && bookId && !books.some((b) => b.id === bookId)) {
+      window.history.replaceState(null, "", urlFor(filters, null));
+      setBookId(null);
+    }
+  }, [state.status, bookId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const searching = query.trim() !== "";
   const narrowed = genre !== "" || format !== "";
@@ -146,10 +178,19 @@ export function App() {
           )}
           {visible.length > 0 && (
             <ul className="book-grid">
-              {visible.map((b) => <BookCard key={b.id} book={b} showShelf={view === "all"} />)}
+              {visible.map((b) => <BookCard key={b.id} book={b} showShelf={view === "all"} onOpen={openBook} />)}
             </ul>
           )}
         </section>
+        {state.status === "ready" && (
+          <BookDialog
+            book={books.find((b) => b.id === bookId) ?? null}
+            list={visible}
+            genreName={genreName}
+            onMove={openBook}
+            onClose={closeBook}
+          />
+        )}
       </main>
       <SiteFooter />
     </div>
@@ -207,12 +248,12 @@ function FilterBar({ books, genres, genre, format, onChange }: {
  * The image is scaled to fit inside it, never cropped: covers come in many shapes (manga, box sets, scans).
  * A missing or broken cover falls back to a typeset cover on the same mat, never a broken-image icon.
  */
-function Cover({ book, className }: { book: Book; className: string }) {
+function Cover({ book, className, decorative = false }: { book: Book; className: string; decorative?: boolean }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className={`cover-frame ${className}`}>
       {book.cover_url && !failed ? (
-        <img src={book.cover_url} alt={`Cover of ${book.title}`} loading="lazy" onError={() => setFailed(true)} />
+        <img src={book.cover_url} alt={decorative ? "" : `Cover of ${book.title}`} loading="lazy" onError={() => setFailed(true)} />
       ) : (
         <div className="cover-empty" aria-hidden="true"><span className="grot">{book.title}</span></div>
       )}
@@ -291,34 +332,127 @@ function Stars({ rating }: { rating: number }) {
 }
 
 /**
- * Card, top to bottom: where it sits (shelf, format, volumes, series), what it is (title, who made it,
- * who translated it), then what I thought (one-liner, stars, Recommended, note).
+ * The card is just enough to recognise a book: cover, title, who made it, stars and Recommended.
+ * Everything else (series, translator, one-liner, note, genres, dates) is one tap away in the details.
+ * The whole card is a real link to ?book=<id>, so it works with a keyboard, a screen reader and "open in new tab";
+ * a plain click opens the details in place instead of reloading the page.
  */
-function BookCard({ book, showShelf }: { book: Book; showShelf: boolean }) {
-  const notes = creditNotes(book.credits);
-  const meta = [
-    // In "All", say which shelf each book is on; on a single shelf that would repeat the tab.
-    showShelf && <span key="shelf" className={book.shelf === "reading" ? "live-label" : undefined}>{shelfLabel[book.shelf]}</span>,
+function BookCard({ book, showShelf, onOpen }: { book: Book; showShelf: boolean; onOpen: (id: string) => void }) {
+  const open = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // let the browser open a new tab
+    e.preventDefault();
+    onOpen(book.id);
+  };
+  return (
+    <li>
+      <a className="book" href={`?book=${book.id}`} onClick={open}>
+        <Cover book={book} className="book-cover" decorative />
+        {/* In "All", only the books in progress say so; on a single shelf that would repeat the tab. */}
+        {showShelf && book.shelf === "reading" && <span className="mono book-meta"><span className="live-label">Reading</span></span>}
+        <span className="grot book-title">{book.title}</span>
+        <span className="small body-2">{byline(book.credits)}</span>
+        {(book.rating != null || book.recommended) && (
+          <span className="book-signals">
+            {book.rating != null && <Stars rating={Number(book.rating)} />}
+            {book.recommended && <span className="badge">✳ Recommended</span>}
+          </span>
+        )}
+      </a>
+    </li>
+  );
+}
+
+/**
+ * The details, in a native <dialog> opened with showModal(): the browser keeps focus inside, closes on Esc,
+ * makes the page behind inert, and draws ::backdrop, which the CSS blurs. Same order as the old card:
+ * where it sits, what it is, then what I thought.
+ */
+function BookDialog({ book, list, genreName, onMove, onClose }: {
+  book: Book | null; list: Book[]; genreName: (slug: string) => string; onMove: (id: string) => void; onClose: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (book && !d.open) d.showModal();
+    if (!book && d.open) d.close();
+    bodyRef.current?.scrollTo(0, 0); // a new book starts at its top
+  }, [book]);
+
+  // Previous and Next follow what's on screen: the current shelf, search and filters.
+  const i = book ? list.findIndex((b) => b.id === book.id) : -1;
+  const prev = i > 0 ? list[i - 1] : null;
+  const next = i >= 0 && i < list.length - 1 ? list[i + 1] : null;
+
+  const notes = book ? creditNotes(book.credits) : "";
+  const meta = book ? [
+    <span key="shelf" className={book.shelf === "reading" ? "live-label" : undefined}>{shelfLabel[book.shelf]}</span>,
     book.format !== "book" && <span key="format">{formatLabel[book.format]}</span>,
     volumesLabel(book.volumes_read, book.volumes_total) && <span key="vol">{volumesLabel(book.volumes_read, book.volumes_total)}</span>,
     book.series && book.format === "book" && <span key="series">{seriesLabel(book.series, book.series_number)}</span>,
-  ].filter(Boolean);
+  ].filter(Boolean) : [];
+  const dates = book ? [
+    book.started_on && `Started ${formatDate(book.started_on)}`,
+    book.finished_on && `Finished ${formatDate(book.finished_on)}`,
+  ].filter(Boolean).join(" · ") : "";
+
   return (
-    <li className="book">
-      <Cover book={book} className="book-cover" />
-      {meta.length > 0 && <span className="mono book-meta">{meta.flatMap((m, i) => (i ? [<span key={`dot${i}`} className="book-meta-dot" aria-hidden="true">·</span>, m] : [m]))}</span>}
-      <span className="grot" style={{ fontSize: 18, lineHeight: "21px" }}>{book.title}</span>
-      <span className="small body-2">{byline(book.credits)}</span>
-      {notes && <span className="small muted credit-notes">{notes}</span>}
-      {book.one_liner && <p className="small one-liner">“{book.one_liner}”</p>}
-      {book.rating != null && <Stars rating={Number(book.rating)} />}
-      {book.recommended && <span className="badge">✳ Recommended</span>}
-      {book.note && (
-        <details className="note">
-          <summary>Read my note</summary>
-          <p className="small body-2">{book.note}</p>
-        </details>
+    <dialog
+      ref={ref}
+      className="book-dialog"
+      aria-labelledby="book-dialog-title"
+      onCancel={(e) => { e.preventDefault(); onClose(); }} // Esc: close through the same path as ✕, so the address updates
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} // a click on the blurred page outside the panel
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft" && prev) onMove(prev.id);
+        if (e.key === "ArrowRight" && next) onMove(next.id);
+      }}
+    >
+      {book && (
+        <div className="book-dialog-panel">
+          <div className="book-dialog-top">
+            <span className="mono book-meta">{meta.flatMap((m, n) => (n ? [<span key={`dot${n}`} className="book-meta-dot" aria-hidden="true">·</span>, m] : [m]))}</span>
+            <button type="button" className="dialog-close" onClick={onClose} aria-label="Close">✕</button>
+          </div>
+          <div className="book-dialog-body" ref={bodyRef}>
+            <Cover book={book} className="book-dialog-cover" />
+            <div className="book-dialog-text">
+              {/* Focus starts on the title, so a screen reader reads it first and no button looks pre-selected. */}
+              <h2 id="book-dialog-title" className="grot book-dialog-title" tabIndex={-1} autoFocus>{book.title}</h2>
+              {book.original_title && <span className="small muted">{book.original_title}</span>}
+              <span className="body-2">{byline(book.credits)}</span>
+              {notes && <span className="small muted credit-notes">{notes}{book.translated_from && ` from ${book.translated_from}`}</span>}
+              {(book.rating != null || book.recommended) && (
+                <span className="book-signals">
+                  {book.rating != null && <Stars rating={Number(book.rating)} />}
+                  {book.recommended && <span className="badge">✳ Recommended</span>}
+                </span>
+              )}
+              {book.one_liner && <p className="one-liner">“{book.one_liner}”</p>}
+              {book.genres.length > 0 && (
+                <ul className="genre-list" aria-label="Genres">
+                  {book.genres.map((g) => <li key={g} className="chip">{genreName(g)}</li>)}
+                </ul>
+              )}
+              {book.note && (
+                <div className="book-note">
+                  <span className="mono muted">My note</span>
+                  <p className="body-2">{book.note}</p>
+                </div>
+              )}
+              {dates && <span className="mono muted book-dates">{dates}</span>}
+            </div>
+          </div>
+          {list.length > 1 && i >= 0 && (
+            <nav className="book-dialog-nav" aria-label="Other books">
+              <button type="button" className="link-button" disabled={!prev} onClick={() => prev && onMove(prev.id)}>‹ Previous</button>
+              <span className="mono muted">{i + 1} of {list.length}</span>
+              <button type="button" className="link-button" disabled={!next} onClick={() => next && onMove(next.id)}>Next ›</button>
+            </nav>
+          )}
+        </div>
       )}
-    </li>
+    </dialog>
   );
 }
